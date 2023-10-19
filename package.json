@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@vercel/kv": "^0.2.3",
+    "clsx": "^2.0.0",
     "next": "13.5.4",
+    "next-auth": "^4.23.2",
     "react": "^18",
     "react-dom": "^18"
   },
