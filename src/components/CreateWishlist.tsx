@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren, useEffect, useState } from 'react';
 import { Form, useForm } from './forms/Form';
 import { FieldConfig } from './forms/types';
 import { createWishlist } from '@/app/actions';
@@ -10,6 +10,7 @@ import { Button } from './common/Button';
 import { Validators } from './forms/Validators';
 import { randomRadialGradient } from '@/utils/random';
 import { FantasyBackground } from './FantasyBackground';
+import clsx from 'clsx';
 
 function toJson<T>(data: Response) {
   return data.json() as Promise<T>;
@@ -49,7 +50,7 @@ const randomBg = () =>
 
 export const CreateWishlist = () => {
   const [buttonText, setButtonText] = useState(defaultButtonText);
-  const [bgImg, setImgBg] = useState(randomBg());
+  const [bgImg, setImgBg] = useState('');
   const router = useRouter();
   const formAction = async (data: FormData) => {
     setButtonText('Skapar ny önskelista, vänta...');
@@ -65,6 +66,10 @@ export const CreateWishlist = () => {
     setImgBg(randomBg());
   };
 
+  useEffect(() => {
+    setImgBg(randomBg());
+  }, []);
+
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg border-white">
       <Form fields={fields} action={formAction}>
@@ -73,7 +78,10 @@ export const CreateWishlist = () => {
         ))}
         <FantasyBackground
           backgroundImage={bgImg}
-          className="flex flex-col gap-4 items-center justify-center h-32 w-8/12 mx-auto my-8">
+          className={clsx(
+            'flex flex-col gap-4 items-center justify-center h-32 w-8/12 mx-auto my-8 transition-opacity duration-1000',
+            bgImg ? 'opacity-100' : 'opacity-0'
+          )}>
           <p>Slumpad bakgrundsfärg</p>
           <Button
             onClick={(e) => {

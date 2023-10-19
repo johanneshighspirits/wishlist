@@ -99,7 +99,7 @@ export const Form = ({
   return (
     <FormContext.Provider value={value}>
       <form
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-4 w-full max-w-xl mx-auto my-4"
         action={
           action
             ? async (...props) => {

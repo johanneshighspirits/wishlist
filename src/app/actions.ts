@@ -7,7 +7,8 @@ export async function createWishlist(formData: FormData) {
   const userId = await getServerUserId();
   const title = (formData.get('title') as string) || '[Namnlös önskelista]';
   const receiverEmail = (formData.get('receiverEmail') as string) || '';
-  return addWishlist({ title, receiverEmail }, userId);
+  const bgImg = (formData.get('bgImg') as string) || '';
+  return addWishlist({ title, receiverEmail, bgImg }, userId);
 }
 
 export async function createWishlistItem(

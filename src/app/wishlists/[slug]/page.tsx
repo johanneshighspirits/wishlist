@@ -1,4 +1,5 @@
 import { CreateWishlist } from '@/components/CreateWishlist';
+import { FantasyBackground } from '@/components/FantasyBackground';
 import { WishlistEditor } from '@/components/WishlistEditor';
 import { getServerUserId } from '@/lib/auth';
 import { WishlistKey } from '@/lib/wishlists/constants';
@@ -65,11 +66,9 @@ export default async function WishlistPage({ params: { slug } }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
+      <h1 className="font-headline text-2xl">{wishlist.title}</h1>
       <WishlistEditor wishlist={wishlist} />
-      <code className="block p-4 rounded-md bg-white/10">
-        <pre>{JSON.stringify(wishlist, null, 2)}</pre>
-      </code>
-    </div>
+    </>
   );
 }

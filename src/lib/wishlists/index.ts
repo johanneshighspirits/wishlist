@@ -23,7 +23,7 @@ export const getUniqueShortURL = async (uuid: string): Promise<string> => {
 };
 
 export const addWishlist = async (
-  wishlist: Pick<Wishlist, 'title' | 'receiverEmail'>,
+  wishlist: Pick<Wishlist, 'title' | 'receiverEmail' | 'bgImg'>,
   userId: string
 ) => {
   const id = crypto.randomUUID();
