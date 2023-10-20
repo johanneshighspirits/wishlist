@@ -17,10 +17,21 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
       <FantasyBackground backgroundImage={wishlist.bgImg}>
         <WishlistItems
           wishlistId={wishlist.id}
+          isReceiver={wishlist.isReceiver}
           items={items}
           onEdit={(editedItems) => setItems(editedItems)}
         />
       </FantasyBackground>
+      {items.length > 0 ? (
+        <div className="mt-12">
+          <p>Använd formuläret 👇 för att lägga till fler saker</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <p>Oj, här var det tomt...</p>
+          <p>Använd formuläret 👇 för att lägga till något i listan</p>
+        </div>
+      )}
       <CreateWishlistItem
         wishlistId={wishlist.id}
         onCreated={(newItem) => setItems((state) => [...state, newItem])}

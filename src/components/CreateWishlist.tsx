@@ -11,6 +11,7 @@ import { Validators } from './forms/Validators';
 import { randomRadialGradient } from '@/utils/random';
 import { FantasyBackground } from './FantasyBackground';
 import clsx from 'clsx';
+import { SubmitButton } from './forms/SubmitButton';
 
 function toJson<T>(data: Response) {
   return data.json() as Promise<T>;
@@ -94,14 +95,5 @@ export const CreateWishlist = () => {
         <SubmitButton>{buttonText}</SubmitButton>
       </Form>
     </div>
-  );
-};
-
-const SubmitButton = ({ children }: PropsWithChildren) => {
-  const { isValid, isProcessing } = useForm();
-  return (
-    <Button disabled={!isValid || isProcessing} type="submit">
-      {children}
-    </Button>
   );
 };

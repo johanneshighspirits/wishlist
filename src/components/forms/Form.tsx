@@ -4,10 +4,17 @@ import {
   useContext,
   useReducer,
 } from 'react';
-import { FieldConfig } from './types';
+import { FieldConfig, ValidationError } from './types';
+import { validateField } from './Validators';
 
 type FormState = {
-  fields: { config: FieldConfig; value: string; isValid: boolean }[];
+  fields: {
+    config: FieldConfig;
+    value: string;
+    isValid: boolean;
+    isDirty: boolean;
+    error: ValidationError | null;
+  }[];
   isProcessing: boolean;
 };
 type Action =
@@ -18,7 +25,8 @@ type Action =
       config?: FieldConfig;
     }
   | { type: 'reset'; fields: FieldConfig[] }
-  | { type: 'setIsProcessing'; isProcessing: boolean };
+  | { type: 'setIsProcessing'; isProcessing: boolean }
+  | { type: 'setIsDirty'; name: string; isDirty: boolean };
 type Dispatch = (action: Action) => void;
 
 const FormContext = createContext<
@@ -40,12 +48,12 @@ const reducer = (state: FormState, action: Action): FormState => {
             ...config,
           };
           if (field.config.name === name) {
+            const error = validateField(value, field.config.validators);
             return {
               ...field,
               value,
-              isValid: (newConfig.validators || []).every(
-                (validator) => validator(value) === null
-              ),
+              isValid: error === null,
+              error,
               config: newConfig,
             };
           }
@@ -57,6 +65,20 @@ const reducer = (state: FormState, action: Action): FormState => {
       return {
         ...state,
         isProcessing: action.isProcessing,
+      };
+    }
+    case 'setIsDirty': {
+      return {
+        ...state,
+        fields: state.fields.map((field) => {
+          if (field.config.name === action.name) {
+            return {
+              ...field,
+              isDirty: action.isDirty,
+            };
+          }
+          return field;
+        }),
       };
     }
     default: {
@@ -74,12 +96,16 @@ const getInitialState = (fields: FieldConfig[]) => {
   return {
     ...initialState,
     fields: fields.map((fieldConfig) => {
+      const error = validateField(
+        fieldConfig.initialValue || '',
+        fieldConfig.validators
+      );
       return {
         config: fieldConfig,
         value: fieldConfig.initialValue || '',
-        isValid: (fieldConfig.validators || []).every(
-          (validator) => validator(fieldConfig.initialValue || '') === null
-        ),
+        isValid: error === null,
+        isDirty: false,
+        error,
       };
     }),
   };
@@ -126,16 +152,25 @@ export function useForm() {
 
   const getValue = (name: string) =>
     fields.find((field) => field.config.name === name)?.value ?? '';
+
   const getValueAndConfig = (name: string) =>
     fields.find((field) => field.config.name === name) ?? {
-      config: { name },
+      config: { name } as FieldConfig,
       value: '',
+      isValid: true,
+      isDirty: false,
+      error: null,
     };
+
   const setValue = (name: string, value: string, config?: FieldConfig) => {
     dispatch({ type: 'setValue', name, value, config });
     if (config?.onValueChange) {
       config.onValueChange(value, fields);
     }
+  };
+
+  const setIsDirty = (name: string, isDirty: boolean) => {
+    dispatch({ type: 'setIsDirty', name, isDirty });
   };
 
   const isValid = fields.every(({ isValid }) => isValid);
@@ -145,6 +180,7 @@ export function useForm() {
     getValue,
     getValueAndConfig,
     setValue,
+    setIsDirty,
     isValid,
     isProcessing,
   };

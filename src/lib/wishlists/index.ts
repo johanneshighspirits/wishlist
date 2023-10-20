@@ -2,6 +2,7 @@ import { generateShortUrl, slugify } from '@/utils/url';
 import { WishlistKey } from './constants';
 import { Wishlist, WishlistItem } from './types';
 import { kv } from '@vercel/kv';
+import { getServerUserId } from '../auth';
 
 export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let length = 6;
@@ -20,6 +21,43 @@ export const getUniqueShortURL = async (uuid: string): Promise<string> => {
     }
   }
   return uuid;
+};
+
+export const getWishlist = async (id: string): Promise<Wishlist | null> => {
+  const wishlist = await kv.hgetall<Wishlist>(`${WishlistKey.Wishlist}:${id}`);
+  if (!wishlist) {
+    return null;
+  }
+  const userId = await getServerUserId();
+  const userEmail = await kv.hget(`${WishlistKey.User}:${userId}`, 'email');
+  const isReceiver = wishlist.receiverEmail === userEmail;
+  const itemIds = await kv.smembers(`${WishlistKey.WishlistItems}:${id}`);
+  const items = (await Promise.all(
+    itemIds.map((itemId) => kv.hgetall(`${WishlistKey.WishlistItem}:${itemId}`))
+  ).then((items) => items.filter((item) => item !== null))) as WishlistItem[];
+
+  const clientItems: WishlistItem[] = items.map((item) => {
+    if (isReceiver) {
+      // User is receiver - hide some fields
+      const { isReservedBy, isBoughtBy, ...clientItem } = item;
+      return {
+        ...clientItem,
+        isReceiver,
+      };
+    } else {
+      return {
+        ...item,
+        isReservedByMe: item.isReservedBy?.toString() === userId,
+        isBoughtByMe: item.isBoughtBy?.toString() === userId,
+      };
+    }
+  });
+
+  return {
+    ...wishlist,
+    items: clientItems,
+    isReceiver,
+  };
 };
 
 export const addWishlist = async (
@@ -71,4 +109,20 @@ export const editWishlistItem = async (
   };
   await kv.hset(key, editedWishlistItem);
   return editedWishlistItem;
+};
+
+export const deleteWishlistItem = async ({
+  wishlistId,
+  wishlistItemId,
+}: {
+  wishlistId: string;
+  wishlistItemId: string;
+}) => {
+  const itemKey = `${WishlistKey.WishlistItem}:${wishlistItemId}`;
+  await kv.del(itemKey);
+  await kv.srem(`${WishlistKey.WishlistItems}:${wishlistId}`, wishlistItemId);
+  return {
+    success: true,
+    message: `WishlistItem ${wishlistItemId} deleted from wishlist ${wishlistId}`,
+  };
 };

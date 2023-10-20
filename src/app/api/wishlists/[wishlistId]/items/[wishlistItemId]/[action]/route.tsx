@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { editWishlistItem } from '@/lib/wishlists';
+import { editWishlistItem, deleteWishlistItem } from '@/lib/wishlists';
 import { UserError } from '@/lib/result/error';
 import { getServerUserId } from '@/lib/auth';
+
+export type DBAction = 'reserve' | 'unreserve' | 'buy' | 'unbuy' | 'delete';
 
 export const POST = async (
   req: NextRequest,
@@ -9,14 +11,19 @@ export const POST = async (
     params,
   }: {
     params: {
+      wishlistId: string;
       wishlistItemId: string;
-      action: 'reserve' | 'unreserve' | 'buy' | 'unbuy';
+      action: DBAction;
     };
   }
 ) => {
   try {
     const userId = await getServerUserId();
-    const { wishlistItemId, action } = params;
+    const { wishlistId, wishlistItemId, action } = params;
+    if (action === 'delete') {
+      const result = await deleteWishlistItem({ wishlistId, wishlistItemId });
+      return NextResponse.json({ result });
+    }
     const data = await req.json().catch(() => ({}));
     const wishlistItem = await editWishlistItem({
       ...data,

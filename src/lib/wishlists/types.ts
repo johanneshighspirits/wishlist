@@ -3,6 +3,7 @@ export type Wishlist = {
   title: string;
   receiverEmail?: string;
   isAdmin?: boolean;
+  isReceiver?: boolean;
   slug: string;
   shortURL: string;
   bgImg?: string;

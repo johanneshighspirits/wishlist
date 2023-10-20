@@ -5,11 +5,10 @@ import { Wishlist } from '@/lib/wishlists/types';
 import { OpenWishlist } from '@/components/OpenWishlist';
 import { ShareLink } from '@/components/ShareLink';
 import { getServerUserId } from '@/lib/auth';
-import { PropsWithChildren, Suspense } from 'react';
-import clsx from 'clsx';
 import { LoremIpsum } from '@/components/LoremIpsum';
-import { randomRadialGradient } from '@/utils/random';
 import { FantasyBackground } from '@/components/FantasyBackground';
+import { SparkleText } from '@/components/common/SparkleText';
+import { getWishlist } from '@/lib/wishlists';
 
 export default async function WishlistsPage() {
   const userId = await getServerUserId();
@@ -18,18 +17,7 @@ export default async function WishlistsPage() {
   );
   const userWishlists = await Promise.all(
     userWishlistIds
-      .map((wishlistId) => {
-        return new Promise((res) => {
-          kv.hgetall<Record<string, Wishlist>>(
-            `${WishlistKey.Wishlist}:${wishlistId}`
-          ).then((wishlist) => {
-            res({
-              ...wishlist,
-              id: wishlistId,
-            });
-          });
-        });
-      })
+      .map((wishlistId) => getWishlist(wishlistId))
       .filter((w) => w !== null) as Promise<Wishlist & { id: string }>[]
   );
 
@@ -45,7 +33,11 @@ export default async function WishlistsPage() {
                   backgroundImage={w.bgImg}
                   className="flex flex-col gap-4 items-start py-6 px-8">
                   <div className="flex w-full justify-between items-center">
-                    <p className="font-headline text-lg">{w.title}</p>
+                    <p className="font-headline text-lg">
+                      <SparkleText hideSparkle={!w.isReceiver}>
+                        {w.title}
+                      </SparkleText>
+                    </p>
                     <ShareLink
                       title={w.title}
                       pathName={`/wishlist/${w.shortURL}`}></ShareLink>

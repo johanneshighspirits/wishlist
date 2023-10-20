@@ -5,6 +5,8 @@ import { Input } from './forms/Input';
 import { FieldConfig } from './forms/types';
 import { createWishlistItem } from '@/app/actions';
 import { Button } from './common/Button';
+import { Validators } from './forms/Validators';
+import { SubmitButton } from './forms/SubmitButton';
 
 function toJson<T>(data: Response) {
   return data.json() as Promise<T>;
@@ -22,12 +24,14 @@ const fields: FieldConfig[] = [
     type: 'text',
     placeholderText: 'Vad önskar du dig?',
     labelText: 'Titel',
+    validators: [Validators.required()],
   },
   {
     name: 'href',
     type: 'url',
     placeholderText: 'Länk till en affär',
     labelText: 'Produktlänk',
+    validators: [Validators.url()],
     onValueChange: async (value, context) => {
       // if (value) {
       //   try {
@@ -57,36 +61,22 @@ export const CreateWishlistItem = ({
   onCreated: (item: WishlistItem) => void;
 }) => {
   const [buttonText, setButtonText] = useState(defaultButtonText);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg border-white">
       <Form
         fields={fields}
         action={async (data) => {
-          setIsProcessing(true);
           setButtonText('Lägger till i önskelistan, vänta...');
-          // const wishlistItem = await apiFetch<WishlistItem>(
-          //   `/api/wishlists/${wishlistId}/items/new`,
-          //   {
-          //     method: 'POST',
-          //     body: JSON.stringify({
-          //       title: title.trim(),
-          //     }),
-          //   }
-          // );
           const addItemToWishlist = createWishlistItem.bind(null, wishlistId);
           const wishlistItem = await addItemToWishlist(data);
-          setIsProcessing(false);
           setButtonText(defaultButtonText);
           onCreated(wishlistItem);
         }}>
         {fields.map((field) => {
           return <Input name={field.name} key={field.name} />;
         })}
-        <Button type="submit" disabled={isProcessing}>
-          {buttonText}
-        </Button>
+        <SubmitButton>{buttonText}</SubmitButton>
       </Form>
     </div>
   );

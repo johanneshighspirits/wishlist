@@ -4,7 +4,13 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-export const LoginRedirect = ({ url = '/wishlists' }: { url?: string }) => {
+export const LoginRedirect = ({
+  url = '/wishlists',
+  hideStatus = false,
+}: {
+  url?: string;
+  hideStatus?: boolean;
+}) => {
   const { status } = useSession();
   const router = useRouter();
   useEffect(() => {
@@ -12,6 +18,9 @@ export const LoginRedirect = ({ url = '/wishlists' }: { url?: string }) => {
       router.push(url);
     }
   }, [url, status, router]);
+  if (hideStatus === true) {
+    return null;
+  }
   return status === 'loading' ? (
     'Vänta lite...'
   ) : (
