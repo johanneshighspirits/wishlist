@@ -107,11 +107,11 @@ export const WishlistItems = ({
                     height={90}
                   />
                 ) : (
-                  <span className="m-auto">💝</span>
+                  <span className="m-auto text-3xl">💝</span>
                 )}
 
                 <div className="flex flex-col gap-1 items-start">
-                  <p>{title}</p>
+                  <p className="font-headline text-lg">{title}</p>
                   {href ? <Link href={href}>Länk</Link> : <span></span>}
                 </div>
 

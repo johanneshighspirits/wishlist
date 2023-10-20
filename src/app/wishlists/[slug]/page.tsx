@@ -67,7 +67,12 @@ export default async function WishlistPage({ params: { slug } }: Props) {
 
   return (
     <>
-      <h1 className="font-headline text-2xl">{wishlist.title}</h1>
+      <div className="flex gap-4 items-center">
+        <FantasyBackground
+          backgroundImage={wishlist.bgImg}
+          className="w-8 h-8"></FantasyBackground>
+        <h1 className="font-headline text-2xl">{wishlist.title}</h1>
+      </div>
       <WishlistEditor wishlist={wishlist} />
     </>
   );
