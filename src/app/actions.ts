@@ -16,7 +16,8 @@ export async function createWishlistItem(
   formData: FormData
 ) {
   const title = (formData.get('title') as string) || '[Ingen titel]';
+  const description = (formData.get('description') as string) || '';
   const href = (formData.get('href') as string) || '';
   const imageURL = (formData.get('imageURL') as string) || '';
-  return addWishlistItem({ title, href, imageURL }, wishlistId);
+  return addWishlistItem({ title, description, href, imageURL }, wishlistId);
 }

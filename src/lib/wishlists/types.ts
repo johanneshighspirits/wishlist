@@ -13,6 +13,7 @@ export type Wishlist = {
 export type WishlistItem = {
   id: string;
   title: string;
+  description?: string;
   href?: string;
   imageURL?: string;
   isReservedBy?: string;

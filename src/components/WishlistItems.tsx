@@ -87,49 +87,82 @@ export const WishlistItems = ({
           const bIsBought = Number(Boolean(b.isBoughtBy || b.isBoughtByMe));
           return aIsBought + aIsReserved - (bIsBought + bIsReserved);
         })
-        .map((item) => {
-          const { id, href, imageURL, title, isBoughtBy, isReservedBy } = item;
-          return (
-            <li
-              className={clsx(
-                'relative grid grid-cols-[80px_repeat(3,1fr)] items-center border p-4 rounded-md gap-4 h-24',
-                isBoughtBy ? 'opacity-80 border-white/30' : 'border-white',
-                isReservedBy ? 'bg-white/5' : 'bg-white/20'
-              )}
-              key={id}>
-              {imageURL && imageURL.startsWith('https') ? (
-                <Image
-                  className="m-auto"
-                  src={imageURL}
-                  alt={title}
-                  width={90}
-                  height={90}
-                />
-              ) : (
-                <span className="m-auto text-3xl">💝</span>
-              )}
-
-              <div className="flex flex-col gap-1 items-start">
-                <p className="font-headline text-lg">{title}</p>
-                {href ? <Link href={href}>Länk</Link> : <span></span>}
-              </div>
-              {isReceiver ? null : (
-                <Actions
-                  item={item}
-                  processing={processing}
-                  onClick={handleClick}></Actions>
-              )}
-
-              <button
-                className="absolute top-0 right-0 py-1 px-3 z-10 hover:bg-red-900 rounded-lg"
-                disabled={processing === 'delete'}
-                onClick={handleClick(id, 'delete')}>
-                x
-              </button>
-            </li>
-          );
-        })}
+        .map((item) => (
+          <Item
+            isReceiver={isReceiver}
+            item={item}
+            key={item.id}
+            onClick={handleClick}
+            processing={processing}
+          />
+        ))}
     </ul>
+  );
+};
+
+type ItemProps = {
+  item: WishlistItem;
+  onClick: (id: string, action: DBAction) => () => void;
+  processing?: DBAction;
+};
+
+const Item = ({
+  item,
+  isReceiver,
+  onClick,
+  processing,
+}: ItemProps & { isReceiver?: boolean }) => {
+  const { id, href, imageURL, title, description, isBoughtBy, isReservedBy } =
+    item;
+  const ItemImage = () =>
+    imageURL && imageURL.startsWith('https') ? (
+      <Image
+        className="m-auto"
+        src={imageURL}
+        alt={title}
+        width={90}
+        height={90}
+      />
+    ) : (
+      <span className="m-auto text-3xl">💝</span>
+    );
+  return (
+    <li
+      className={clsx(
+        'relative grid grid-cols-[80px_repeat(3,1fr)] items-center border p-4 rounded-md gap-4 h-24',
+        isBoughtBy ? 'opacity-80 border-white/30' : 'border-white',
+        isReservedBy ? 'bg-white/5' : 'bg-white/20'
+      )}
+      key={id}>
+      {href ? (
+        <a
+          className="flex h-full"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer">
+          <ItemImage />
+        </a>
+      ) : (
+        <ItemImage />
+      )}
+      <div className="flex flex-col gap-1 items-start">
+        <p className="font-headline text-lg">{title}</p>
+        {description && <p>{description}</p>}
+      </div>
+      {isReceiver ? null : (
+        <Actions
+          item={item}
+          processing={processing}
+          onClick={onClick}></Actions>
+      )}
+
+      <button
+        className="absolute top-0 right-0 py-1 px-3 z-10 hover:bg-red-900 rounded-lg"
+        disabled={processing === 'delete'}
+        onClick={onClick(id, 'delete')}>
+        x
+      </button>
+    </li>
   );
 };
 
@@ -137,11 +170,7 @@ const Actions = ({
   item: { id, isBoughtBy, isBoughtByMe, isReservedBy, isReservedByMe },
   onClick,
   processing,
-}: {
-  item: WishlistItem;
-  onClick: (id: string, action: DBAction) => () => void;
-  processing?: DBAction;
-}) => {
+}: ItemProps) => {
   return (
     <>
       {isBoughtBy ? (

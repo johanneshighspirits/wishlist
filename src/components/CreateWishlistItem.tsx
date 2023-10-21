@@ -1,10 +1,9 @@
 import { WishlistItem } from '@/lib/wishlists/types';
-import { ChangeEventHandler, useState } from 'react';
+import { useState } from 'react';
 import { Form } from './forms/Form';
 import { Input } from './forms/Input';
 import { FieldConfig } from './forms/types';
 import { createWishlistItem } from '@/app/actions';
-import { Button } from './common/Button';
 import { Validators } from './forms/Validators';
 import { SubmitButton } from './forms/SubmitButton';
 
@@ -25,6 +24,13 @@ const fields: FieldConfig[] = [
     placeholderText: 'Vad önskar du dig?',
     labelText: 'Titel',
     validators: [Validators.required()],
+  },
+  {
+    name: 'description',
+    type: 'text',
+    placeholderText: 'Mer detaljer',
+    labelText: 'Beskrivning',
+    infoText: 'Berätta mer om det du önskar. Färg, modell, storlek osv...',
   },
   {
     name: 'href',

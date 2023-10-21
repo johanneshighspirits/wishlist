@@ -6,7 +6,7 @@ export default function Home() {
     <section className="flex flex-col gap-4">
       <h2 className="font-headline text-2xl">Önskelistan</h2>
       <Link href="/wishlists">Till önskelistorna</Link>
-      <LoginRedirect />
+      <LoginRedirect hideStatus={true} />
     </section>
   );
 }

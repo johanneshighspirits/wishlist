@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Login } from './Login';
 import { LoginStatus } from './LoginStatus';
 import { BackButton } from './BackButton';
+import { Avatar } from './Avatar';
 
 export const Header = () => {
   return (
@@ -16,9 +17,12 @@ export const Header = () => {
             &laquo; Tillbaka
           </BackButton>
         </div>
-        <div>
-          <Login />
-          <LoginStatus />
+        <div className="flex gap-4 items-center">
+          <Avatar />
+          <div>
+            <Login />
+            <LoginStatus />
+          </div>
         </div>
       </div>
     </header>
