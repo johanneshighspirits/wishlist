@@ -4,25 +4,35 @@ import { WishlistKey } from '@/lib/wishlists/constants';
 import { Wishlist } from '@/lib/wishlists/types';
 import { OpenWishlist } from '@/components/OpenWishlist';
 import { ShareLink } from '@/components/ShareLink';
-import { getServerUserId } from '@/lib/auth';
+import { getServerUserEmail, getServerUserId } from '@/lib/auth';
 import { LoremIpsum } from '@/components/LoremIpsum';
 import { FantasyBackground } from '@/components/FantasyBackground';
 import { SparkleText } from '@/components/common/SparkleText';
 import { getWishlist } from '@/lib/wishlists';
+import { MembersEditor } from '@/components/MembersEditor';
+import { Suspense } from 'react';
+import { InvitationsEditor } from '@/components/InvitationsEditor';
 
-export default async function WishlistsPage() {
+async function fetchWishlists() {
   const userId = await getServerUserId();
   const userWishlistIds = await kv.smembers(
     `${WishlistKey.UserWishlists}:${userId}`
   );
-  const userWishlists = await Promise.all(
+  return Promise.all(
     userWishlistIds
       .map((wishlistId) => getWishlist(wishlistId))
       .filter((w) => w !== null) as Promise<Wishlist & { id: string }>[]
   );
+}
+
+export default async function WishlistsPage() {
+  const userWishlists = await fetchWishlists();
 
   return (
     <section className="flex flex-col gap-8">
+      <Suspense>
+        <InvitationsEditor />
+      </Suspense>
       {userWishlists.length > 0 ? (
         <article className="flex flex-col gap-4">
           <h3>Dina önskelistor</h3>
@@ -42,6 +52,7 @@ export default async function WishlistsPage() {
                       title={w.title}
                       pathName={`/wishlist/${w.shortURL}`}></ShareLink>
                   </div>
+                  <MembersEditor wishlist={w} />
                   <div className="h-24 blur-sm overflow-hidden">
                     <LoremIpsum
                       className="leading-6"

@@ -9,6 +9,7 @@ export const ShareLink = ({
 }: PropsWithChildren<{ title: string; pathName: string }>) => {
   const handleClick = async () => {
     const url = `${location.origin}${pathName}`;
+    console.log(url);
     try {
       if (navigator.share) {
         await navigator.share({

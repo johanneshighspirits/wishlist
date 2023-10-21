@@ -7,9 +7,9 @@ import {
 import { FieldConfig, ValidationError } from './types';
 import { validateField } from './Validators';
 
-type FormState = {
+type FormState<T extends string> = {
   fields: {
-    config: FieldConfig;
+    config: FieldConfig<T>;
     value: string;
     isValid: boolean;
     isDirty: boolean;
@@ -17,23 +17,28 @@ type FormState = {
   }[];
   isProcessing: boolean;
 };
-type Action =
+type Action<T extends string> =
   | {
       type: 'setValue';
       name: string;
       value: string;
-      config?: FieldConfig;
+      config?: FieldConfig<T>;
     }
-  | { type: 'reset'; fields: FieldConfig[] }
+  | { type: 'reset'; fields: FieldConfig<T>[] }
   | { type: 'setIsProcessing'; isProcessing: boolean }
-  | { type: 'setIsDirty'; name: string; isDirty: boolean };
-type Dispatch = (action: Action) => void;
+  | { type: 'setIsDirty'; name: string; isDirty: boolean }
+  | { type: 'addField'; config: FieldConfig<T> };
+
+type Dispatch = <T extends string>(action: Action<T>) => void;
 
 const FormContext = createContext<
-  { state: FormState; dispatch: Dispatch } | undefined
+  { state: FormState<any>; dispatch: Dispatch } | undefined
 >(undefined);
 
-const reducer = (state: FormState, action: Action): FormState => {
+const reducer = <T extends string>(
+  state: FormState<T>,
+  action: Action<T>
+): FormState<T> => {
   switch (action.type) {
     case 'reset': {
       return getInitialState(action.fields);
@@ -81,18 +86,33 @@ const reducer = (state: FormState, action: Action): FormState => {
         }),
       };
     }
+    case 'addField': {
+      return {
+        ...state,
+        fields: [
+          ...state.fields,
+          {
+            value: action.config.initialValue || '',
+            config: action.config,
+            isDirty: false,
+            isValid: true,
+            error: null,
+          },
+        ],
+      };
+    }
     default: {
       return state;
     }
   }
 };
 
-const initialState: FormState = {
+const initialState: FormState<any> = {
   fields: [],
   isProcessing: false,
 };
 
-const getInitialState = (fields: FieldConfig[]) => {
+const getInitialState = <T extends string>(fields: FieldConfig<T>[]) => {
   return {
     ...initialState,
     fields: fields.map((fieldConfig) => {
@@ -116,7 +136,7 @@ export const Form = ({
   action,
   children,
 }: PropsWithChildren<{
-  fields: FieldConfig[];
+  fields: FieldConfig<any>[];
   action?: (data: FormData) => Promise<any>;
 }>) => {
   const [state, dispatch] = useReducer(reducer, getInitialState(fields));
@@ -155,14 +175,14 @@ export function useForm() {
 
   const getValueAndConfig = (name: string) =>
     fields.find((field) => field.config.name === name) ?? {
-      config: { name } as FieldConfig,
+      config: { name } as FieldConfig<any>,
       value: '',
       isValid: true,
       isDirty: false,
       error: null,
     };
 
-  const setValue = (name: string, value: string, config?: FieldConfig) => {
+  const setValue = (name: string, value: string, config?: FieldConfig<any>) => {
     dispatch({ type: 'setValue', name, value, config });
     if (config?.onValueChange) {
       config.onValueChange(value, fields);
@@ -171,6 +191,10 @@ export function useForm() {
 
   const setIsDirty = (name: string, isDirty: boolean) => {
     dispatch({ type: 'setIsDirty', name, isDirty });
+  };
+
+  const addField = (config: FieldConfig<any>) => {
+    dispatch({ type: 'addField', config });
   };
 
   const isValid = fields.every(({ isValid }) => isValid);
@@ -183,5 +207,6 @@ export function useForm() {
     setIsDirty,
     isValid,
     isProcessing,
+    addField,
   };
 }

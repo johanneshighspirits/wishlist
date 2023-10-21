@@ -13,3 +13,9 @@ export const getServerUserId = async () => {
   }
   return userId;
 };
+
+export const getServerUserEmail = async () => {
+  const session = await getServerSession(authOptions);
+  const userEmail = session?.user?.email ?? '';
+  return userEmail;
+};

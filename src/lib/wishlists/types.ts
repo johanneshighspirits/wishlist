@@ -21,3 +21,13 @@ export type WishlistItem = {
   isBoughtBy?: string;
   isBoughtByMe?: boolean;
 };
+
+export type Invitation = {
+  email: string;
+  invitedBy: string;
+  wishlistId: string;
+  shortURL: string;
+  wishlistTitle: string;
+  isAccepted: boolean;
+  isDeclined: boolean;
+};

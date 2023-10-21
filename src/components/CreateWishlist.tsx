@@ -23,15 +23,21 @@ function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit | undefined) {
 
 const defaultButtonText = 'Skapa ny önskelista (+)';
 
-const fields: FieldConfig[] = [
-  {
+const formConfig = {
+  title: {
     name: 'title',
     type: 'text',
     placeholderText: 'Namn på önskelistan',
     labelText: 'Titel',
     validators: [Validators.required()],
   },
-  {
+  isMine: {
+    name: 'isMine',
+    type: 'checkbox',
+    labelText: 'Det är jag som önskar',
+    // initialValue: 'on',
+  },
+  receiverEmail: {
     name: 'receiverEmail',
     type: 'email',
     placeholderText: 'Mottagarens email',
@@ -40,7 +46,11 @@ const fields: FieldConfig[] = [
       'Skriv in epost till den som önskar, så göms vissa fält automatiskt. Vi vill ju inte avslöja något i förväg...',
     validators: [Validators.email()],
   },
-];
+};
+type FieldNames = keyof typeof formConfig;
+const fields: FieldConfig<FieldNames>[] = Object.values(
+  formConfig
+) as FieldConfig<FieldNames>[];
 
 const randomBg = () =>
   [
@@ -74,9 +84,12 @@ export const CreateWishlist = () => {
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg border-white">
       <Form fields={fields} action={formAction}>
-        {fields.map((field) => (
-          <Input name={field.name} key={field.name} />
-        ))}
+        <Input<FieldNames> name="title" />
+        <Input<FieldNames> name="isMine" />
+        <ReceiverEmail>
+          <Input<FieldNames> name="receiverEmail" />
+        </ReceiverEmail>
+
         <FantasyBackground
           backgroundImage={bgImg}
           className={clsx(
@@ -96,4 +109,13 @@ export const CreateWishlist = () => {
       </Form>
     </div>
   );
+};
+
+const ReceiverEmail = ({ children }: PropsWithChildren) => {
+  const { getValue } = useForm();
+  const isHidden = getValue('isMine') === 'on';
+  if (isHidden) {
+    return null;
+  }
+  return children;
 };

@@ -1,40 +1,65 @@
-import { ChangeEventHandler, FocusEventHandler, useState } from 'react';
+import { ChangeEventHandler, FocusEventHandler } from 'react';
 import { useForm } from './Form';
 import { FieldConfig } from './types';
 import clsx from 'clsx';
 
-export const Input = ({ name, type = 'text' }: FieldConfig) => {
+export function Input<FieldName extends string>({
+  name,
+}: FieldConfig<FieldName>) {
   const { getValueAndConfig, setValue, setIsDirty } = useForm();
   const { value, error, config, isDirty } = getValueAndConfig(name);
-  const { labelText, placeholderText, infoText } = config;
+  const { labelText, placeholderText, infoText, type = 'text' } = config;
+  const isCheckbox = type === 'checkbox';
 
   const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
     setIsDirty(name, true);
   };
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setValue(name, e.target.value, config);
+    setValue(
+      name,
+      isCheckbox ? (e.target.checked ? 'on' : 'off') : e.target.value,
+      config
+    );
   };
 
   const isRequired = config.validators?.some((v) => v.name === 'required');
   const hasError = isDirty && error !== null;
+  const label = `${labelText}${isRequired ? ' *' : ''}`;
 
+  const inputProps = {
+    name,
+    type,
+    value,
+    required: isRequired,
+    onBlur: handleBlur,
+    onChange: handleChange,
+    placeholder: placeholderText,
+  };
   return (
-    <label className={clsx('flex flex-col flex-1 gap-4 pb-2')}>
-      {labelText}
-      {isRequired ? ' *' : ''}
-      <input
-        name={name}
-        className={clsx(
-          'text-black bg-slate-200 focus:bg-white py-2 px-4 rounded-sm w-full placeholder:text-gray-700 focus:placeholder:text-gray-400',
-          hasError && 'border border-red-500 bg-red-200'
-        )}
-        type={type}
-        value={value}
-        required={isRequired}
-        onBlur={handleBlur}
-        onChange={handleChange}
-        placeholder={placeholderText}></input>
+    <label
+      className={clsx(
+        'flex flex-1 gap-4 pb-2',
+        isCheckbox
+          ? 'flex-row items-center cursor-pointer accent-sky-600'
+          : 'flex-col'
+      )}>
+      {isCheckbox ? (
+        <>
+          <input className={clsx('h-6 w-6 rounded-sm')} {...inputProps}></input>
+          <span>{label}</span>
+        </>
+      ) : (
+        <>
+          {label}
+          <input
+            className={clsx(
+              'text-black bg-slate-200 focus:bg-white py-2 px-4 rounded-sm w-full placeholder:text-gray-700 focus:placeholder:text-gray-400',
+              hasError && 'border border-red-500 bg-red-200'
+            )}
+            {...inputProps}></input>
+        </>
+      )}
       {hasError && (
         <div className="text-red-200 py-2 px-4 rounded-sm bg-red-800/30">
           💥 {error.message} 💥
@@ -43,4 +68,4 @@ export const Input = ({ name, type = 'text' }: FieldConfig) => {
       {infoText && <div>{infoText}</div>}
     </label>
   );
-};
+}

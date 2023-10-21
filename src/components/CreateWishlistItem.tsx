@@ -17,7 +17,7 @@ function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit | undefined) {
 
 const defaultButtonText = 'Lägg till i önskelistan (+)';
 
-const fields: FieldConfig[] = [
+const fields: FieldConfig<string>[] = [
   {
     name: 'title',
     type: 'text',
