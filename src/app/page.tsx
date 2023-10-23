@@ -6,7 +6,7 @@ export default function Home() {
       <h2 className="font-headline text-2xl">Önskelistan</h2>
       <LoginRedirect
         loadingContent={
-          <div className="text-gray-400">Försöker logga in, vänta lite...</div>
+          <div className="text-gray-400">Loggar in, vänta lite...</div>
         }></LoginRedirect>
     </section>
   );

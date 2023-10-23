@@ -93,6 +93,15 @@ export const addWishlist = async (
     newWishlist.receiverEmail,
     userEmail
   );
+  if (newWishlist.receiverEmail && newWishlist.receiverEmail !== userEmail) {
+    await inviteEmailToWishlist(
+      newWishlist.receiverEmail,
+      userEmail,
+      id,
+      newWishlist.title,
+      newWishlist.shortURL
+    );
+  }
   return newWishlist;
 };
 
@@ -105,20 +114,36 @@ export const addEmailsToWishlist = async (
   const invitedBy = await getServerUserEmail();
   await kv.sadd(`${WishlistKey.WishlistMembers}:${wishlistId}`, ...emails);
   for (const email of emails) {
-    await kv.sadd(
-      `${WishlistKey.Invitations}:${email}`,
-      JSON.stringify({
-        email,
-        invitedBy,
-        wishlistId,
-        wishlistTitle,
-        shortURL,
-        isAccepted: false,
-        isDeclined: false,
-      })
+    await inviteEmailToWishlist(
+      email,
+      invitedBy,
+      wishlistId,
+      wishlistTitle,
+      shortURL
     );
   }
   return emails;
+};
+
+export const inviteEmailToWishlist = (
+  email: string,
+  invitedBy: string,
+  wishlistId: string,
+  wishlistTitle: string,
+  shortURL: string
+) => {
+  return kv.sadd(
+    `${WishlistKey.Invitations}:${email}`,
+    JSON.stringify({
+      email,
+      invitedBy,
+      wishlistId,
+      wishlistTitle,
+      shortURL,
+      isAccepted: false,
+      isDeclined: false,
+    })
+  );
 };
 
 export const addWishlistItem = async (
