@@ -1,10 +1,10 @@
 import { WishlistItem } from '@/lib/wishlists/types';
 import { PropsWithChildren, useState } from 'react';
 import Image from 'next/image';
-import { Link } from './common/Link';
 import { Button } from './common/Button';
 import clsx from 'clsx';
 import { DBAction } from '@/app/api/wishlists/[wishlistId]/items/[wishlistItemId]/[action]/route';
+import { WizardHint } from './WizardHint';
 
 export const WishlistItems = ({
   wishlistId,
@@ -202,12 +202,16 @@ const Actions = ({
               )}
             </>
           ) : (
-            <Button
-              variant="secondary"
-              disabled={processing === 'reserve'}
-              onClick={onClick(id, 'reserve')}>
-              Boka
-            </Button>
+            <WizardHint
+              id="item-button-book"
+              text="Klicka här för att boka denna present">
+              <Button
+                variant="secondary"
+                disabled={processing === 'reserve'}
+                onClick={onClick(id, 'reserve')}>
+                Boka
+              </Button>
+            </WizardHint>
           )}
         </div>
       )}

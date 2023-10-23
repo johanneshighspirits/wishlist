@@ -5,6 +5,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter, Glegoo } from 'next/font/google';
 import clsx from 'clsx';
+import { WizardProvider } from '@/components/WizardProvider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 const glegoo = Glegoo({
@@ -34,7 +35,7 @@ export default function RootLayout({
         <Protected>
           <Header />
           <main className="flex flex-1 flex-col items-center justify-between p-24">
-            {children}
+            <WizardProvider>{children}</WizardProvider>
           </main>
           <Footer />
         </Protected>

@@ -20,6 +20,31 @@ const config: Config = {
       zIndex: {
         1: '1',
       },
+      boxShadow: {
+        hint: '3px 5px 14px rgb(0 0 0 / .4)',
+      },
+      animation: {
+        'hint-x': 'hint-x 1.5s infinite ease-in-out',
+      },
+      keyframes: {
+        'hint-x': {
+          '0%': {
+            transform: 'translateX(0px)',
+          },
+          '20%': {
+            transform: 'translateX(-16px)',
+          },
+          '40%': {
+            transform: 'translateX(-8px)',
+          },
+          '60%': {
+            transform: 'translateX(-14px)',
+          },
+          '100%': {
+            transform: 'translateX(0px)',
+          },
+        },
+      },
     },
   },
   plugins: [],
