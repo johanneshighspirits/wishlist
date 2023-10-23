@@ -51,6 +51,7 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
           return <Input name={fieldName} key={fieldName} />;
         })}
         <MoreEmailFields
+          wishlistId={wishlist.id}
           fieldNames={fieldNames}
           setFieldNames={setFieldNames}
         />
@@ -63,34 +64,54 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
 };
 
 const MoreEmailFields = ({
+  wishlistId,
   fieldNames,
   setFieldNames,
 }: {
+  wishlistId: string;
   fieldNames: string[];
   setFieldNames: Dispatch<SetStateAction<string[]>>;
 }) => {
   const { addField } = useForm();
+  const [members, setMembers] = useState([]);
   return (
-    <Button
-      variant="secondary"
-      className="self-end"
-      onClick={(e) => {
-        e.preventDefault();
-        addField({
-          name: `member-${fieldNames.length}`,
-          type: 'email',
-          labelText: `Lägg till medlem ${
-            fieldNames.length > 1 ? fieldNames.length + 1 : ''
-          }`,
-          placeholderText: 'Epostadress att bjuda in',
-          validators: [Validators.email()],
-        });
-        setFieldNames((fieldNames) => [
-          ...fieldNames,
-          `member-${fieldNames.length}`,
-        ]);
-      }}>
-      {fieldNames.length > 0 ? 'Lägg till ytterligare en epost' : 'Dela listan'}
-    </Button>
+    <>
+      {members.length > 0 ? (
+        <div className="my-2">
+          <p className="italic text-gray-300">Redan inbjudna:</p>
+          <p>{members.join(', ')}</p>
+        </div>
+      ) : null}
+      <Button
+        variant="secondary"
+        className="self-end"
+        onClick={(e) => {
+          e.preventDefault();
+          if (fieldNames.length === 0) {
+            fetch(`/api/wishlists/${wishlistId}/members`, { method: 'POST' })
+              .then((res) => res.json())
+              .then((result) => {
+                setMembers(result);
+              });
+          }
+          addField({
+            name: `member-${fieldNames.length}`,
+            type: 'email',
+            labelText: `Lägg till medlem ${
+              fieldNames.length > 1 ? fieldNames.length + 1 : ''
+            }`,
+            placeholderText: 'Epostadress att bjuda in',
+            validators: [Validators.email()],
+          });
+          setFieldNames((fieldNames) => [
+            ...fieldNames,
+            `member-${fieldNames.length}`,
+          ]);
+        }}>
+        {fieldNames.length > 0
+          ? 'Lägg till ytterligare en epost'
+          : 'Dela listan'}
+      </Button>
+    </>
   );
 };

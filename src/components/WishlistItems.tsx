@@ -1,5 +1,5 @@
 import { WishlistItem } from '@/lib/wishlists/types';
-import { useState } from 'react';
+import { PropsWithChildren, useState } from 'react';
 import Image from 'next/image';
 import { Link } from './common/Link';
 import { Button } from './common/Button';
@@ -114,18 +114,7 @@ const Item = ({
 }: ItemProps & { isReceiver?: boolean }) => {
   const { id, href, imageURL, title, description, isBoughtBy, isReservedBy } =
     item;
-  const ItemImage = () =>
-    imageURL && imageURL.startsWith('https') ? (
-      <Image
-        className="m-auto"
-        src={imageURL}
-        alt={title}
-        width={90}
-        height={90}
-      />
-    ) : (
-      <span className="m-auto text-3xl">💝</span>
-    );
+
   return (
     <li
       className={clsx(
@@ -134,21 +123,26 @@ const Item = ({
         isReservedBy ? 'bg-white/5' : 'bg-white/20'
       )}
       key={id}>
-      {href ? (
-        <a
-          className="flex h-full"
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer">
-          <ItemImage />
-        </a>
-      ) : (
-        <ItemImage />
-      )}
-      <div className="flex flex-col gap-1 items-start">
+      <ExternalLinkWrapper href={href} className="flex h-full">
+        {imageURL && imageURL.startsWith('https') ? (
+          <Image
+            className="m-auto"
+            src={imageURL}
+            alt={title}
+            width={90}
+            height={90}
+          />
+        ) : (
+          <span className="m-auto text-3xl">💝</span>
+        )}
+      </ExternalLinkWrapper>
+
+      <ExternalLinkWrapper
+        href={href}
+        className="flex flex-col gap-1 items-start">
         <p className="font-headline text-lg">{title}</p>
         {description && <p>{description}</p>}
-      </div>
+      </ExternalLinkWrapper>
       {isReceiver ? null : (
         <Actions
           item={item}
@@ -163,6 +157,24 @@ const Item = ({
         x
       </button>
     </li>
+  );
+};
+
+const ExternalLinkWrapper = ({
+  href,
+  className,
+  children,
+}: PropsWithChildren<{ href?: string; className?: string }>) => {
+  return href ? (
+    <a
+      className={className}
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer">
+      {children}
+    </a>
+  ) : (
+    children
   );
 };
 

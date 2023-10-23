@@ -11,7 +11,6 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   if (!wishlist) {
     return null;
   }
-
   return (
     <>
       <FantasyBackground backgroundImage={wishlist.bgImg}>

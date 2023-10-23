@@ -1,4 +1,3 @@
-import { CreateWishlist } from '@/components/CreateWishlist';
 import { FantasyBackground } from '@/components/FantasyBackground';
 import { WishlistEditor } from '@/components/WishlistEditor';
 import { SparkleText } from '@/components/common/SparkleText';
@@ -13,13 +12,7 @@ const idFromSlug = async (slug: string): Promise<string> => {
   return id;
 };
 
-type Props = {
-  params: {
-    slug: string;
-  };
-};
-
-export default async function WishlistPage({ params: { slug } }: Props) {
+const fetchWishlist = async (slug: string) => {
   const id = await idFromSlug(slug);
   const userId = await getServerUserId();
   const hasAccess = await kv.sismember(
@@ -37,6 +30,26 @@ export default async function WishlistPage({ params: { slug } }: Props) {
       'Vi hittade ingen önskelista här, är du säker på att du har rätt adress?'
     );
   }
+  return wishlist;
+};
+
+type Props = {
+  params: {
+    slug: string;
+  };
+};
+
+export async function generateMetadata({ params: { slug } }: Props) {
+  try {
+    const wishlist = await fetchWishlist(slug);
+    return { title: `💝 ${wishlist.title} 💝` };
+  } catch {
+    return { title: '💝 Önskelistan 💝' };
+  }
+}
+
+export default async function WishlistPage({ params: { slug } }: Props) {
+  const wishlist = await fetchWishlist(slug);
 
   return (
     <>

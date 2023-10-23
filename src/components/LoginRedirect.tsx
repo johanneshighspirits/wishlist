@@ -2,13 +2,17 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, ReactNode } from 'react';
 
 export const LoginRedirect = ({
   url = '/wishlists',
+  loadingContent,
+  notLoggedInContent,
   hideStatus = false,
 }: {
   url?: string;
+  loadingContent?: ReactNode;
+  notLoggedInContent?: ReactNode;
   hideStatus?: boolean;
 }) => {
   const { status } = useSession();
@@ -18,16 +22,18 @@ export const LoginRedirect = ({
       router.push(url);
     }
   }, [url, status, router]);
-  if (hideStatus === true) {
-    return null;
+  if (status === 'loading') {
+    return loadingContent ?? null;
   }
-  return status === 'loading' ? (
-    'Vänta lite...'
-  ) : (
-    <>
-      <h1 className="font-headline text-2xl">Välkommen!</h1>
-      <p>Logga in med knappen uppe till höger ↗</p>
-      <div className="mt-8 flex justify-center w-full"></div>
-    </>
-  );
+  if (status === 'unauthenticated') {
+    return (
+      notLoggedInContent ?? (
+        <>
+          <h1 className="font-headline text-2xl">Välkommen!</h1>
+          <p>Logga in med knappen uppe till höger ↗</p>
+          <div className="mt-8 flex justify-center w-full"></div>
+        </>
+      )
+    );
+  }
 };
