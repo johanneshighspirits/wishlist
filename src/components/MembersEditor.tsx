@@ -84,7 +84,7 @@ const MoreEmailFields = ({
       ) : null}
       <Button
         variant="secondary"
-        className="self-end"
+        className="self-end mb-4"
         onClick={(e) => {
           e.preventDefault();
           if (fieldNames.length === 0) {

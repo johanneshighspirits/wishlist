@@ -74,7 +74,7 @@ export const WishlistItems = ({
   };
 
   return (
-    <ul className="grid gap-4 p-12">
+    <ul className="grid gap-4 p-4 lg:p-12">
       {[...items]
         .sort((a, b) => {
           const aIsReserved = Number(
@@ -126,12 +126,12 @@ const Item = ({
   return (
     <li
       className={clsx(
-        'relative grid grid-cols-[80px_repeat(3,1fr)] items-center border p-4 rounded-md gap-4 h-24',
+        'relative grid grid-cols-4 lg:grid-cols-[80px_repeat(3,1fr)] lg:items-center border p-4 rounded-md gap-4 lg:h-24',
         isBoughtBy ? 'opacity-80 border-white/30' : 'border-white',
         isReservedBy ? 'bg-white/5' : 'bg-white/20'
       )}
       key={id}>
-      <ExternalLinkWrapper href={href} className="flex h-full">
+      <ExternalLinkWrapper href={href} className="flex flex-col h-full">
         {imageURL && imageURL.startsWith('https') ? (
           <Image
             className="m-auto"
@@ -143,14 +143,18 @@ const Item = ({
         ) : (
           <span className="m-auto text-3xl">💝</span>
         )}
+        <span className="lg:hidden text-center text-xs text-sky-200 underline">
+          länk
+        </span>
       </ExternalLinkWrapper>
 
       <ExternalLinkWrapper
         href={href}
-        className="flex flex-col gap-1 items-start">
+        className="flex flex-col col-span-3 lg:col-span-1 gap-1 items-start">
         <p className="font-headline text-lg">{title}</p>
         {description && <p>{description}</p>}
       </ExternalLinkWrapper>
+
       {isReceiver ? null : (
         <Actions
           item={item}
@@ -175,14 +179,14 @@ const ExternalLinkWrapper = ({
 }: PropsWithChildren<{ href?: string; className?: string }>) => {
   return href ? (
     <a
-      className={className}
+      className={clsx('cursor-pointer', className)}
       href={href}
       target="_blank"
       rel="noopener noreferrer">
       {children}
     </a>
   ) : (
-    children
+    <span className={className}>{children}</span>
   );
 };
 
@@ -196,13 +200,14 @@ const Actions = ({
       {isBoughtBy ? (
         <span></span>
       ) : (
-        <div className="flex flex-col gap-2 items-center">
+        <div className="flex flex-col gap-2 col-span-4 lg:col-span-1 lg:items-center">
           {isReservedBy ? (
             <>
               <span className="whitespace-pre">✨ Bokad ✨</span>
               {isReservedByMe && (
                 <Button
                   variant="secondary"
+                  className="bg-white/10"
                   disabled={processing === 'unreserve'}
                   onClick={onClick(id, 'unreserve')}>
                   Avboka
@@ -215,6 +220,7 @@ const Actions = ({
               text="Klicka här för att boka denna present">
               <Button
                 variant="secondary"
+                className="bg-white/10"
                 disabled={processing === 'reserve'}
                 onClick={onClick(id, 'reserve')}>
                 Boka
@@ -223,13 +229,14 @@ const Actions = ({
           )}
         </div>
       )}
-      <div className="flex flex-col gap-2 items-center">
+      <div className="flex flex-col gap-2 col-span-4 lg:col-span-1 lg:items-center">
         {isBoughtBy ? (
           <>
             <span className="whitespace-pre">🎁 Köpt 🎁</span>
             {isBoughtByMe && (
               <Button
                 variant="secondary"
+                className="bg-white/10"
                 disabled={processing === 'unbuy'}
                 onClick={onClick(id, 'unbuy')}>
                 Ångra köpt
@@ -241,6 +248,7 @@ const Actions = ({
         ) : (
           <Button
             variant="secondary"
+            className="bg-white/10"
             disabled={processing === 'buy'}
             onClick={onClick(id, 'buy')}>
             Markera som köpt

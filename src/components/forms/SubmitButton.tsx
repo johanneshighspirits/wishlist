@@ -8,7 +8,10 @@ export const SubmitButton = ({
 }: PropsWithChildren<{ isDisabled?: boolean }>) => {
   const { isValid, isProcessing } = useForm();
   return (
-    <Button disabled={isDisabled || !isValid || isProcessing} type="submit">
+    <Button
+      className="mt-2"
+      disabled={isDisabled || !isValid || isProcessing}
+      type="submit">
       {children}
     </Button>
   );

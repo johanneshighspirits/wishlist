@@ -93,7 +93,7 @@ export const CreateWishlist = () => {
         <FantasyBackground
           backgroundImage={bgImg}
           className={clsx(
-            'flex flex-col gap-4 items-center justify-center h-32 w-8/12 mx-auto my-8 transition-opacity duration-1000',
+            'flex flex-col gap-4 items-center justify-center h-32 w-full lg:w-8/12 mx-auto my-4 lg:my-8 transition-opacity duration-1000',
             bgImg ? 'opacity-100' : 'opacity-0'
           )}>
           <p>Slumpad bakgrundsfärg</p>

@@ -13,15 +13,19 @@ export const Header = () => {
           <Link href="/">
             <h1 className="font-headline">Önskelistan</h1>
           </Link>
-          <BackButton className="block absolute mt-2 text-xs text-white/70 hover:text-white font-serif italic">
+          <BackButton className="hidden lg:block absolute mt-2 text-xs text-white/70 hover:text-white font-serif italic">
             &laquo; Tillbaka
           </BackButton>
         </div>
         <div className="flex gap-4 items-center">
-          <Avatar />
+          <span className="hidden lg:block">
+            <Avatar />
+          </span>
           <div>
             <Login />
-            <LoginStatus />
+            <span className="hidden lg:block">
+              <LoginStatus />
+            </span>
           </div>
         </div>
       </div>

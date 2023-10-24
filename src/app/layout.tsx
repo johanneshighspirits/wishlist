@@ -34,7 +34,7 @@ export default function RootLayout({
         )}>
         <Protected>
           <Header />
-          <main className="flex flex-1 flex-col items-center justify-between p-24">
+          <main className="flex flex-1 flex-col items-center justify-between p-4 lg:p-24">
             <WizardProvider>{children}</WizardProvider>
           </main>
           <Footer />

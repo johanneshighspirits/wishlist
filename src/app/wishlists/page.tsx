@@ -41,19 +41,19 @@ export default async function WishlistsPage() {
               <li key={w.id}>
                 <FantasyBackground
                   backgroundImage={w.bgImg}
-                  className="flex flex-col gap-4 items-start py-6 px-8">
+                  className="flex flex-col gap-4 items-start p-4 lg:py-6 lg:px-8">
                   <div className="flex w-full justify-between items-center">
                     <p className="font-headline text-lg">
                       <SparkleText hideSparkle={!w.isReceiver}>
                         {w.title}
                       </SparkleText>
                     </p>
-                    <ShareLink
+                    {/* <ShareLink
                       title={w.title}
-                      pathName={`/wishlist/${w.shortURL}`}></ShareLink>
+                      pathName={`/wishlist/${w.shortURL}`}></ShareLink> */}
                   </div>
                   <MembersEditor wishlist={w} />
-                  <div className="h-24 blur-sm overflow-hidden">
+                  <div className="hidden lg:block h-24 blur-sm overflow-hidden">
                     <LoremIpsum
                       className="leading-6"
                       maxLines={4}
