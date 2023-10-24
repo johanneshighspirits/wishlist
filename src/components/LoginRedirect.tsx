@@ -29,7 +29,6 @@ export const LoginRedirect = ({
     return (
       notLoggedInContent ?? (
         <>
-          <h1 className="font-headline text-2xl">Välkommen!</h1>
           <p>Logga in med knappen uppe till höger ↗</p>
           <div className="mt-8 flex justify-center w-full"></div>
         </>

@@ -8,7 +8,11 @@ export default function LoginPage({
   const { returnUrl = '/wishlists' } = searchParams;
   return (
     <section className="flex flex-col gap-4 font-body">
-      <LoginRedirect url={returnUrl} />
+      <h1 className="font-headline text-2xl">Välkommen!</h1>
+      <LoginRedirect
+        loadingContent={<div>Laddar listor...</div>}
+        url={returnUrl}
+      />
     </section>
   );
 }
