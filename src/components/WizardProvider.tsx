@@ -112,12 +112,24 @@ export const WizardProvider = ({ children }: PropsWithChildren) => {
       console.error('Could not read from localStorage');
     }
   }, []);
-  globalThis.window?.requestIdleCallback(() => {
-    globalThis.window?.localStorage.setItem(
-      'wizardHints',
-      JSON.stringify(state.hints)
+  if (globalThis.window?.requestIdleCallback) {
+    globalThis.window?.requestIdleCallback(
+      () => {
+        globalThis.window?.localStorage.setItem(
+          'wizardHints',
+          JSON.stringify(state.hints)
+        );
+      },
+      { timeout: 1000 }
     );
-  });
+  } else {
+    setTimeout(() => {
+      globalThis.window?.localStorage.setItem(
+        'wizardHints',
+        JSON.stringify(state.hints)
+      );
+    }, 0);
+  }
   return (
     <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
   );
