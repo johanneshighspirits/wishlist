@@ -115,6 +115,14 @@ const Item = ({
   const { id, href, imageURL, title, description, isBoughtBy, isReservedBy } =
     item;
 
+  const handleDelete = () => {
+    const shouldDelete = confirm(
+      'Vill du verkligen ta bort denna present från önskelistan?'
+    );
+    if (shouldDelete) {
+      onClick(id, 'delete');
+    }
+  };
   return (
     <li
       className={clsx(
@@ -153,7 +161,7 @@ const Item = ({
       <button
         className="absolute top-0 right-0 py-1 px-3 z-10 hover:bg-red-900 rounded-lg"
         disabled={processing === 'delete'}
-        onClick={onClick(id, 'delete')}>
+        onClick={handleDelete}>
         x
       </button>
     </li>
