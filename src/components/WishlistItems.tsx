@@ -246,13 +246,17 @@ const Actions = ({
         ) : isReservedBy && !isReservedByMe ? (
           <span>Reserverad</span>
         ) : (
-          <Button
-            variant="secondary"
-            className="bg-white/10"
-            disabled={processing === 'buy'}
-            onClick={onClick(id, 'buy')}>
-            Markera som köpt
-          </Button>
+          <WizardHint
+            id="item-button-reserve"
+            text="Reservera denna present (så ingen annan köper samma)">
+            <Button
+              variant="secondary"
+              className="bg-white/10"
+              disabled={processing === 'buy'}
+              onClick={onClick(id, 'buy')}>
+              Markera som köpt
+            </Button>
+          </WizardHint>
         )}
       </div>
     </>

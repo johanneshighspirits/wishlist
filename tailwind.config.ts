@@ -25,6 +25,7 @@ const config: Config = {
       },
       animation: {
         'hint-x': 'hint-x 1.5s infinite ease-in-out',
+        'hint-y': 'hint-y 1.5s infinite ease-in-out',
       },
       keyframes: {
         'hint-x': {
@@ -42,6 +43,23 @@ const config: Config = {
           },
           '100%': {
             transform: 'translateX(0px)',
+          },
+        },
+        'hint-y': {
+          '0%': {
+            transform: 'translateY(0px)',
+          },
+          '20%': {
+            transform: 'translateY(-16px)',
+          },
+          '40%': {
+            transform: 'translateY(-8px)',
+          },
+          '60%': {
+            transform: 'translateY(-14px)',
+          },
+          '100%': {
+            transform: 'translateY(0px)',
           },
         },
       },

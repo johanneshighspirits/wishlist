@@ -7,6 +7,9 @@ import {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useRef,
+  MutableRefObject,
+  useLayoutEffect,
 } from 'react';
 
 type Hint = {
@@ -14,28 +17,35 @@ type Hint = {
   text: string;
   isRead: boolean;
   isVisible: boolean;
+  isRegistered: boolean;
 };
 
 type WizardState = {
+  activeId: string;
   hints: Record<string, Hint>;
 };
 
 type Action =
   | { type: 'markAsRead'; id: string }
   | { type: 'initHints'; hints: Record<string, Hint> }
-  | { type: 'registerHint'; id: string; text: string }
-  | { type: 'unregisterHint'; id: string };
+  | { type: 'registerHint'; id: string }
+  | { type: 'unregisterHint'; id: string }
+  | { type: 'setActiveId'; wizardId: string };
 type Dispatch = (action: Action) => void;
 
 const WizardContext = createContext<
-  { state: WizardState; dispatch: Dispatch } | undefined
+  | {
+      state: WizardState;
+      dispatch: Dispatch;
+    }
+  | undefined
 >(undefined);
 
 function reducer(state: WizardState, action: Action): WizardState {
   switch (action.type) {
     case 'initHints': {
       const newHints = { ...state.hints };
-      Object.values(action.hints).forEach((hint) => {
+      Object.values(action.hints).forEach(({ isRegistered, ...hint }) => {
         newHints[hint.id] = {
           ...newHints[hint.id],
           ...hint,
@@ -54,8 +64,8 @@ function reducer(state: WizardState, action: Action): WizardState {
           [action.id]: {
             ...state.hints[action.id],
             id: action.id,
-            text: action.text,
             isVisible: true,
+            isRegistered: true,
           },
         },
       };
@@ -72,9 +82,16 @@ function reducer(state: WizardState, action: Action): WizardState {
         },
       };
     }
+    case 'setActiveId': {
+      return {
+        ...state,
+        activeId: action.wizardId,
+      };
+    }
     case 'markAsRead': {
       return {
         ...state,
+        activeId: '',
         hints: {
           ...state.hints,
           [action.id]: {
@@ -92,10 +109,34 @@ function reducer(state: WizardState, action: Action): WizardState {
 
 const initialState: WizardState = {
   hints: {},
+  activeId: '',
 };
+
+let intersectionObserver: IntersectionObserver;
 
 export const WizardProvider = ({ children }: PropsWithChildren) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const firstVisibleElementRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleIntersection(entries: IntersectionObserverEntry[]) {
+      let top = Infinity;
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRect.top < top) {
+          firstVisibleElementRef.current = entry.target as HTMLDivElement;
+          top = entry.intersectionRect.top;
+        }
+      });
+      if (firstVisibleElementRef.current !== null) {
+        console.log(firstVisibleElementRef.current.dataset.wizardId);
+        firstVisibleElementRef.current.dataset.topMost = 'true';
+        intersectionObserver?.disconnect();
+      }
+    }
+    intersectionObserver = new IntersectionObserver(handleIntersection);
+    return () => intersectionObserver?.disconnect();
+  }, []);
+
   const value = {
     state,
     dispatch,
@@ -112,6 +153,7 @@ export const WizardProvider = ({ children }: PropsWithChildren) => {
       console.error('Could not read from localStorage');
     }
   }, []);
+
   if (globalThis.window?.requestIdleCallback) {
     globalThis.window?.requestIdleCallback(
       () => {
@@ -142,13 +184,23 @@ export function useWizard() {
   }
 
   const {
-    state: { hints },
+    state: { hints, activeId },
     dispatch,
   } = ctx;
 
   const registerHint = useCallback(
-    (id: string, text: string) => dispatch({ type: 'registerHint', id, text }),
-    [dispatch]
+    (id: string, targetElement: HTMLElement) => {
+      if (!hints[id]?.isRegistered) {
+        targetElement.dataset.wizardId = id;
+        if (intersectionObserver) {
+          intersectionObserver.observe(targetElement);
+        }
+        setTimeout(() => {
+          dispatch({ type: 'registerHint', id });
+        }, 100);
+      }
+    },
+    [dispatch, hints]
   );
 
   const unregisterHint = useCallback(
@@ -156,14 +208,32 @@ export function useWizard() {
     [dispatch]
   );
 
-  const isHintRead = (id: string) => {
-    return hints[id]?.isRead ?? false;
-  };
+  const isHintRead = useCallback(
+    (id: string) => {
+      return hints[id]?.isRead ?? false;
+    },
+    [hints]
+  );
+  const isHintRegistered = useCallback(
+    (id: string) => {
+      return hints[id]?.isRegistered === true;
+    },
+    [hints]
+  );
+
+  const markAsRead = useCallback(
+    (id: string) => dispatch({ type: 'markAsRead', id }),
+    [dispatch]
+  );
+  const isHintActive = useCallback((id: string) => true, []);
+
   return {
     registerHint,
     unregisterHint,
-    markAsRead: (id: string) => dispatch({ type: 'markAsRead', id }),
+    markAsRead,
     isHintRead,
-    isHintActive: (id: string) => true,
+    isHintActive,
+    isHintRegistered,
+    activeId,
   };
 }

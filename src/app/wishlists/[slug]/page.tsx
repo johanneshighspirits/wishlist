@@ -4,6 +4,7 @@ import { SparkleText } from '@/components/common/SparkleText';
 import { getServerUserId } from '@/lib/auth';
 import { getWishlist } from '@/lib/wishlists';
 import { WishlistKey } from '@/lib/wishlists/constants';
+import { Wishlist } from '@/lib/wishlists/types';
 import { kv } from '@vercel/kv';
 
 const idFromSlug = async (slug: string): Promise<string> => {
@@ -12,7 +13,29 @@ const idFromSlug = async (slug: string): Promise<string> => {
   return id;
 };
 
-const fetchWishlist = async (slug: string) => {
+const DEV_CACHE = true;
+
+const fetchWishlist = async (slug: string): Promise<Wishlist> => {
+  if (DEV_CACHE) {
+    return {
+      id: 'id',
+      title: 'title',
+      slug: 'slug',
+      shortURL: 'shortURL',
+      items: [
+        {
+          id: 'id',
+          title: 'title',
+          description: 'description',
+        },
+        {
+          id: 'id2',
+          title: 'title2',
+          description: 'description2',
+        },
+      ],
+    };
+  }
   const id = await idFromSlug(slug);
   const userId = await getServerUserId();
   const hasAccess = await kv.sismember(
