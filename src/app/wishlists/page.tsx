@@ -38,7 +38,7 @@ export default async function WishlistsPage() {
           <h3>Dina önskelistor</h3>
           <ul className="flex flex-col gap-8">
             {userWishlists.map((w) => (
-              <li key={w.id}>
+              <li key={w.id} className="text-white">
                 <FantasyBackground
                   backgroundImage={w.bgImg}
                   className="flex flex-col gap-4 items-start p-4 lg:py-6 lg:px-8">

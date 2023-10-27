@@ -61,7 +61,7 @@ export function Input<FieldName extends string>({
         </>
       )}
       {hasError && (
-        <div className="text-red-200 py-2 px-4 rounded-sm bg-red-800/30">
+        <div className="text-red-900 dark:text-red-200 py-2 px-4 rounded-sm bg-red-800/30">
           💥 {error.message} 💥
         </div>
       )}

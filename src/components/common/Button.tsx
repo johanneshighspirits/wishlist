@@ -6,7 +6,7 @@ export type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
 
 export const ButtonStyles: Record<ButtonVariant, string> = {
   primary:
-    'border border-white border-solid bg-gray-200 text-black hover:text-white hover:bg-gray-900 py-2 px-6 rounded-md disabled:bg-gray-500 disabled:text-gray-700 disabled:border-gray-500',
+    'border border-white border-solid bg-gray-200 text-black hover:text-white hover:bg-gray-900 py-2 px-6 rounded-md disabled:bg-gray-400 disabled:text-gray-300 disabled:border-gray-300 dark:disabled:bg-gray-500 dark:disabled:text-gray-700 dark:disabled:border-gray-500',
   secondary:
     'border border-gray-500 hover:border-white border-solid py-3 lg:py-1 px-4 rounded-md',
   tertiary:

@@ -18,7 +18,7 @@ export const FantasyBackground = ({
           backgroundImage,
           backgroundSize: '200% 200%',
         }}
-        className="absolute inset-0 bg-slate-800 -z-1"></div>
+        className="absolute inset-0 bg-white dark:bg-slate-800 -z-1"></div>
       {children}
     </div>
   );
