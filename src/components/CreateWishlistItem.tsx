@@ -38,17 +38,16 @@ const fields: FieldConfig<string>[] = [
     placeholderText: 'Länk till en affär',
     labelText: 'Produktlänk',
     validators: [Validators.url()],
-    onValueChange: async (value, context) => {
-      // if (value) {
-      //   try {
-      //     const url = new URL(value);
-      //     fetch(url).then((res) => {
-      //       debugger;
-      //     });
-      //   } catch (err) {
-      //     console.error(err);
-      //   }
-      // }
+    onValueChange: (value, context) => {
+      if (typeof value === 'string') {
+        try {
+          const url = new URL(value);
+          return { value: `${url.origin}${url.pathname}` };
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      return { value };
     },
   },
   {

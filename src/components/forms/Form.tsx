@@ -183,9 +183,11 @@ export function useForm() {
     };
 
   const setValue = (name: string, value: string, config?: FieldConfig<any>) => {
-    dispatch({ type: 'setValue', name, value, config });
     if (config?.onValueChange) {
-      config.onValueChange(value, fields);
+      const transformed = config.onValueChange(value, fields);
+      dispatch({ type: 'setValue', name, value: transformed.value, config });
+    } else {
+      dispatch({ type: 'setValue', name, value, config });
     }
   };
 

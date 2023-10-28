@@ -8,7 +8,7 @@ export type FieldConfig<FieldName extends string | undefined = undefined> = {
   placeholderText?: string;
   infoText?: string;
   validators?: ValidatorFn[];
-  onValueChange?: (value: string | true, context: any) => void;
+  onValueChange?: (value: string, context: any) => { value: string };
 };
 
 export type ValidationError = {
