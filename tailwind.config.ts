@@ -22,12 +22,23 @@ const config: Config = {
       },
       boxShadow: {
         hint: '3px 5px 14px rgb(0 0 0 / .4)',
+        'wizard-highlight':
+          '0px 0px 1rem rgb(0 255 0 / 0.5), 0px 0px 0px 2px white',
       },
       animation: {
         'hint-x': 'hint-x 1.5s infinite ease-in-out',
         'hint-y': 'hint-y 1.5s infinite ease-in-out',
+        'fade-in': 'fade-in 400ms 1.5s backwards ease-out',
       },
       keyframes: {
+        'fade-in': {
+          from: {
+            opacity: '0',
+          },
+          to: {
+            opacity: '1',
+          },
+        },
         'hint-x': {
           '0%': {
             transform: 'translateX(0px)',

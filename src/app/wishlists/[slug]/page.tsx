@@ -13,7 +13,7 @@ const idFromSlug = async (slug: string): Promise<string> => {
   return id;
 };
 
-const DEV_CACHE = true;
+const DEV_CACHE = false;
 
 const fetchWishlist = async (slug: string): Promise<Wishlist> => {
   if (DEV_CACHE) {
@@ -27,6 +27,8 @@ const fetchWishlist = async (slug: string): Promise<Wishlist> => {
           id: 'id',
           title: 'title',
           description: 'description',
+          isBoughtBy: '123',
+          isBoughtByMe: false,
         },
         {
           id: 'id2',

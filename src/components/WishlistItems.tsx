@@ -203,20 +203,32 @@ const Actions = ({
         <div className="flex flex-col gap-2 col-span-4 lg:col-span-1 lg:items-center">
           {isReservedBy ? (
             <>
-              <span className="whitespace-pre">✨ Bokad ✨</span>
-              {isReservedByMe && (
-                <Button
-                  variant="secondary"
-                  className="bg-white/10"
-                  disabled={processing === 'unreserve'}
-                  onClick={onClick(id, 'unreserve')}>
-                  Avboka
-                </Button>
+              {isReservedByMe ? (
+                <>
+                  <span className="whitespace-pre">✨ Bokad ✨</span>
+                  <WizardHint
+                    hintType="item-button-booked-by-user"
+                    text="Du har tänkt att köpa den här.">
+                    <Button
+                      variant="secondary"
+                      className="bg-white/10"
+                      disabled={processing === 'unreserve'}
+                      onClick={onClick(id, 'unreserve')}>
+                      Avboka
+                    </Button>
+                  </WizardHint>
+                </>
+              ) : (
+                <WizardHint
+                  hintType="item-button-booked-by-someone"
+                  text="Någon annan har tänkt att köpa den här.">
+                  <span className="whitespace-pre">✨ Bokad ✨</span>
+                </WizardHint>
               )}
             </>
           ) : (
             <WizardHint
-              id="item-button-book"
+              hintType="item-button-book"
               text="Klicka här för att boka denna present">
               <Button
                 variant="secondary"
@@ -232,22 +244,34 @@ const Actions = ({
       <div className="flex flex-col gap-2 col-span-4 lg:col-span-1 lg:items-center">
         {isBoughtBy ? (
           <>
-            <span className="whitespace-pre">🎁 Köpt 🎁</span>
-            {isBoughtByMe && (
-              <Button
-                variant="secondary"
-                className="bg-white/10"
-                disabled={processing === 'unbuy'}
-                onClick={onClick(id, 'unbuy')}>
-                Ångra köpt
-              </Button>
+            {isBoughtByMe ? (
+              <>
+                <span className="whitespace-pre">🎁 Köpt 🎁</span>
+                <WizardHint
+                  hintType="item-button-bought-by-me"
+                  text="Du har redan köpt denna present - Fantastiskt">
+                  <Button
+                    variant="secondary"
+                    className="bg-white/10"
+                    disabled={processing === 'unbuy'}
+                    onClick={onClick(id, 'unbuy')}>
+                    Ångra köpt
+                  </Button>
+                </WizardHint>
+              </>
+            ) : (
+              <WizardHint
+                hintType="item-button-bought-by-someone"
+                text="Någon annan har redan köpt denna present">
+                <span className="whitespace-pre">🎁 Köpt 🎁</span>
+              </WizardHint>
             )}
           </>
         ) : isReservedBy && !isReservedByMe ? (
           <span>Reserverad</span>
         ) : (
           <WizardHint
-            id="item-button-reserve"
+            hintType="item-button-reserve"
             text="Reservera denna present (så ingen annan köper samma)">
             <Button
               variant="secondary"

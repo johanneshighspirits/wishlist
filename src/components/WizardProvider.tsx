@@ -8,29 +8,26 @@ import {
   useCallback,
   useEffect,
   useRef,
-  MutableRefObject,
-  useLayoutEffect,
 } from 'react';
 
 type Hint = {
-  id: string;
+  uid: string;
+  hintType: string;
   text: string;
-  isRead: boolean;
-  isVisible: boolean;
-  isRegistered: boolean;
 };
 
 type WizardState = {
   activeId: string;
   hints: Record<string, Hint>;
+  readHintTypes: Set<string>;
 };
 
 type Action =
-  | { type: 'markAsRead'; id: string }
-  | { type: 'initHints'; hints: Record<string, Hint> }
-  | { type: 'registerHint'; id: string }
-  | { type: 'unregisterHint'; id: string }
-  | { type: 'setActiveId'; wizardId: string };
+  | { type: 'registerHint'; hintType: string; uid: string }
+  | { type: 'setActiveId'; uid: string }
+  | { type: 'markAsRead'; hintType: string }
+  | { type: 'unregisterHint'; id: string };
+
 type Dispatch = (action: Action) => void;
 
 const WizardContext = createContext<
@@ -43,41 +40,15 @@ const WizardContext = createContext<
 
 function reducer(state: WizardState, action: Action): WizardState {
   switch (action.type) {
-    case 'initHints': {
-      const newHints = { ...state.hints };
-      Object.values(action.hints).forEach(({ isRegistered, ...hint }) => {
-        newHints[hint.id] = {
-          ...newHints[hint.id],
-          ...hint,
-        };
-      });
-      return {
-        ...state,
-        hints: newHints,
-      };
-    }
     case 'registerHint': {
       return {
         ...state,
         hints: {
           ...state.hints,
-          [action.id]: {
-            ...state.hints[action.id],
-            id: action.id,
-            isVisible: true,
-            isRegistered: true,
-          },
-        },
-      };
-    }
-    case 'unregisterHint': {
-      return {
-        ...state,
-        hints: {
-          ...state.hints,
-          [action.id]: {
-            ...state.hints[action.id],
-            isVisible: false,
+          [action.uid]: {
+            ...state.hints[action.uid],
+            uid: action.uid,
+            hintType: action.hintType,
           },
         },
       };
@@ -85,20 +56,14 @@ function reducer(state: WizardState, action: Action): WizardState {
     case 'setActiveId': {
       return {
         ...state,
-        activeId: action.wizardId,
+        activeId: action.uid,
       };
     }
     case 'markAsRead': {
       return {
         ...state,
         activeId: '',
-        hints: {
-          ...state.hints,
-          [action.id]: {
-            ...state.hints[action.id],
-            isRead: true,
-          },
-        },
+        readHintTypes: new Set([...state.readHintTypes, action.hintType]),
       };
     }
     default: {
@@ -109,57 +74,73 @@ function reducer(state: WizardState, action: Action): WizardState {
 
 const initialState: WizardState = {
   hints: {},
+  readHintTypes: new Set(),
   activeId: '',
 };
 
 let intersectionObserver: IntersectionObserver;
 
+const getInitialState = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const array: string[] = JSON.parse(
+        globalThis.window?.localStorage.getItem('readHintTypes') || '[]'
+      );
+      return {
+        ...initialState,
+        readHintTypes: new Set<string>(array),
+      };
+    } catch {
+      return initialState;
+    }
+  }
+  return initialState;
+};
+
 export const WizardProvider = ({ children }: PropsWithChildren) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const firstVisibleElementRef = useRef<HTMLDivElement | null>(null);
+  const [state, dispatch] = useReducer(reducer, getInitialState());
+  const firstVisibleElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     function handleIntersection(entries: IntersectionObserverEntry[]) {
       let top = Infinity;
+      firstVisibleElementRef.current = null;
       entries.forEach((entry) => {
-        if (entry.isIntersecting && entry.intersectionRect.top < top) {
-          firstVisibleElementRef.current = entry.target as HTMLDivElement;
+        if (
+          entry.isIntersecting &&
+          !state.readHintTypes.has(
+            (entry.target as HTMLElement).dataset.hintType || ''
+          ) &&
+          entry.intersectionRect.top < top
+        ) {
+          firstVisibleElementRef.current = entry.target as HTMLElement;
           top = entry.intersectionRect.top;
         }
       });
       if (firstVisibleElementRef.current !== null) {
-        console.log(firstVisibleElementRef.current.dataset.wizardId);
-        firstVisibleElementRef.current.dataset.topMost = 'true';
-        intersectionObserver?.disconnect();
+        dispatch({
+          type: 'setActiveId',
+          uid:
+            (firstVisibleElementRef.current as HTMLElement)?.dataset.uid || '',
+        });
+        intersectionObserver.unobserve(firstVisibleElementRef.current);
       }
     }
     intersectionObserver = new IntersectionObserver(handleIntersection);
     return () => intersectionObserver?.disconnect();
-  }, []);
+  }, [state.activeId, state.readHintTypes]);
 
   const value = {
     state,
     dispatch,
   };
-  useEffect(() => {
-    try {
-      const wizardHints =
-        globalThis.window?.localStorage.getItem('wizardHints');
-      if (wizardHints) {
-        const hints = JSON.parse(wizardHints);
-        dispatch({ type: 'initHints', hints });
-      }
-    } catch {
-      console.error('Could not read from localStorage');
-    }
-  }, []);
 
   if (globalThis.window?.requestIdleCallback) {
     globalThis.window?.requestIdleCallback(
       () => {
         globalThis.window?.localStorage.setItem(
-          'wizardHints',
-          JSON.stringify(state.hints)
+          'readHintTypes',
+          JSON.stringify([...state.readHintTypes])
         );
       },
       { timeout: 1000 }
@@ -167,11 +148,12 @@ export const WizardProvider = ({ children }: PropsWithChildren) => {
   } else {
     setTimeout(() => {
       globalThis.window?.localStorage.setItem(
-        'wizardHints',
-        JSON.stringify(state.hints)
+        'readHintTypes',
+        JSON.stringify([...state.readHintTypes])
       );
     }, 0);
   }
+
   return (
     <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
   );
@@ -184,20 +166,19 @@ export function useWizard() {
   }
 
   const {
-    state: { hints, activeId },
+    state: { hints, activeId, readHintTypes },
     dispatch,
   } = ctx;
 
   const registerHint = useCallback(
-    (id: string, targetElement: HTMLElement) => {
-      if (!hints[id]?.isRegistered) {
-        targetElement.dataset.wizardId = id;
+    (hintType: string, uid: string, targetElement: HTMLElement) => {
+      if (!hints[uid]) {
+        targetElement.dataset.uid = uid;
+        targetElement.dataset.hintType = hintType;
         if (intersectionObserver) {
           intersectionObserver.observe(targetElement);
         }
-        setTimeout(() => {
-          dispatch({ type: 'registerHint', id });
-        }, 100);
+        dispatch({ type: 'registerHint', uid, hintType });
       }
     },
     [dispatch, hints]
@@ -210,30 +191,30 @@ export function useWizard() {
 
   const isHintRead = useCallback(
     (id: string) => {
-      return hints[id]?.isRead ?? false;
+      return readHintTypes.has(id);
     },
-    [hints]
-  );
-  const isHintRegistered = useCallback(
-    (id: string) => {
-      return hints[id]?.isRegistered === true;
-    },
-    [hints]
+    [readHintTypes]
   );
 
   const markAsRead = useCallback(
-    (id: string) => dispatch({ type: 'markAsRead', id }),
+    (hintType: string) => {
+      dispatch({ type: 'markAsRead', hintType });
+      setTimeout(() => {
+        Array.from(document.querySelectorAll('[data-hint-type]')).forEach(
+          (element) => {
+            intersectionObserver.observe(element);
+          }
+        );
+      }, 100);
+    },
     [dispatch]
   );
-  const isHintActive = useCallback((id: string) => true, []);
 
   return {
     registerHint,
     unregisterHint,
     markAsRead,
     isHintRead,
-    isHintActive,
-    isHintRegistered,
     activeId,
   };
 }
