@@ -6,12 +6,17 @@ import { getWishlist } from '@/lib/wishlists';
 import { WishlistKey } from '@/lib/wishlists/constants';
 import { Wishlist } from '@/lib/wishlists/types';
 import { kv } from '@vercel/kv';
+import { unstable_cache } from 'next/cache';
 
-const idFromSlug = async (slug: string): Promise<string> => {
-  const id: string =
-    (await kv.hget<string>(`${WishlistKey.ShortURL}:${slug}`, 'id')) ?? '';
-  return id;
-};
+const idFromSlug = unstable_cache(
+  async (slug: string): Promise<string> => {
+    const id: string =
+      (await kv.hget<string>(`${WishlistKey.ShortURL}:${slug}`, 'id')) ?? '';
+    return id;
+  },
+  ['slug-id'],
+  { revalidate: 24 * 60 * 60 }
+);
 
 const DEV_CACHE = false;
 
