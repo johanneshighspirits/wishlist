@@ -19,7 +19,7 @@ const idFromSlug = unstable_cache(
   { revalidate: 24 * 60 * 60 }
 );
 
-const DEV_CACHE = true;
+const DEV_CACHE = false;
 const bgImg = [
   randomRadialGradient(6),
   randomRadialGradient(4),
