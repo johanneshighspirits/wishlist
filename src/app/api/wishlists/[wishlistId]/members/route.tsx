@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { addWishlistItem } from '@/lib/wishlists';
 import { UserError } from '@/lib/result/error';
 import { kv } from '@vercel/kv';
 import { WishlistKey } from '@/lib/wishlists/constants';
+
+export const runtime = 'edge';
 
 export const POST = async (
   req: NextRequest,

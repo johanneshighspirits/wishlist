@@ -5,6 +5,8 @@ import { getServerUserId } from '@/lib/auth';
 
 export type DBAction = 'reserve' | 'unreserve' | 'buy' | 'unbuy' | 'delete';
 
+export const runtime = 'edge';
+
 export const POST = async (
   req: NextRequest,
   {
