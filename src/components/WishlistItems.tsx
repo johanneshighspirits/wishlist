@@ -1,10 +1,11 @@
 import { WishlistItem } from '@/lib/wishlists/types';
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren, Suspense, useState } from 'react';
 import Image from 'next/image';
 import { Button } from './common/Button';
 import clsx from 'clsx';
 import { DBAction } from '@/app/api/wishlists/[wishlistId]/items/[wishlistItemId]/[action]/route';
 import { WizardHint } from './WizardHint';
+import { getHint } from '@/lib/wizard/hints';
 
 export const WishlistItems = ({
   wishlistId,
@@ -126,27 +127,33 @@ const Item = ({
   return (
     <li
       className={clsx(
-        'relative grid grid-cols-4 lg:grid-cols-[80px_repeat(3,1fr)] lg:items-center border p-4 rounded-md gap-4 lg:h-24',
+        'relative grid grid-cols-4 lg:grid-cols-[80px_repeat(3,1fr)] lg:items-center border p-4 rounded-md gap-4 lg:min-h-24',
         isBoughtBy ? 'opacity-80 border-white/30' : 'border-white',
         isReservedBy ? 'bg-white/5' : 'bg-white/20'
       )}
       key={id}>
-      <ExternalLinkWrapper href={href} className="flex flex-col h-full">
-        {imageURL && imageURL.startsWith('https') ? (
-          <Image
-            className="m-auto"
-            src={imageURL}
-            alt={title}
-            width={90}
-            height={90}
-          />
-        ) : (
-          <span className="m-auto text-3xl">💝</span>
-        )}
-        <span className="lg:hidden text-center text-xs text-sky-200 underline">
-          länk
-        </span>
-      </ExternalLinkWrapper>
+      <WizardHint {...getHint('external-link')} isDisabled={!href}>
+        <ExternalLinkWrapper
+          href={href}
+          className="flex flex-col h-full rounded-sm">
+          {imageURL && imageURL.startsWith('https') ? (
+            <Image
+              className="m-auto"
+              src={imageURL}
+              alt={title}
+              width={90}
+              height={90}
+            />
+          ) : (
+            <span className="m-auto text-3xl">💝</span>
+          )}
+          {href && (
+            <span className="text-center text-xs text-sky-200 underline">
+              länk
+            </span>
+          )}
+        </ExternalLinkWrapper>
+      </WizardHint>
 
       <ExternalLinkWrapper
         href={href}
@@ -205,10 +212,10 @@ const Actions = ({
             <>
               {isReservedByMe ? (
                 <>
-                  <span className="whitespace-pre">✨ Bokad ✨</span>
-                  <WizardHint
-                    hintType="item-button-booked-by-user"
-                    text="Du har tänkt att köpa den här.">
+                  <span className="whitespace-pre p-2 rounded-sm m-auto">
+                    ✨ Bokad (av mej) ✨
+                  </span>
+                  <WizardHint {...getHint('item-button-booked-by-user')}>
                     <Button
                       variant="secondary"
                       className="bg-white/10"
@@ -219,17 +226,15 @@ const Actions = ({
                   </WizardHint>
                 </>
               ) : (
-                <WizardHint
-                  hintType="item-button-booked-by-someone"
-                  text="Någon annan har tänkt att köpa den här.">
-                  <span className="whitespace-pre">✨ Bokad ✨</span>
+                <WizardHint {...getHint('item-button-booked-by-someone')}>
+                  <span className="whitespace-pre p-2 rounded-sm m-auto">
+                    ✨ Bokad ✨
+                  </span>
                 </WizardHint>
               )}
             </>
           ) : (
-            <WizardHint
-              hintType="item-button-book"
-              text="Klicka här för att boka denna present">
+            <WizardHint {...getHint('item-button-book')}>
               <Button
                 variant="secondary"
                 className="bg-white/10"
@@ -246,10 +251,10 @@ const Actions = ({
           <>
             {isBoughtByMe ? (
               <>
-                <span className="whitespace-pre">🎁 Köpt 🎁</span>
-                <WizardHint
-                  hintType="item-button-bought-by-me"
-                  text="Du har redan köpt denna present - Fantastiskt">
+                <span className="whitespace-pre p-2 rounded-sm m-auto">
+                  🎁 Köpt (av mej) 🎁
+                </span>
+                <WizardHint {...getHint('item-button-bought-by-me')}>
                   <Button
                     variant="secondary"
                     className="bg-white/10"
@@ -260,19 +265,17 @@ const Actions = ({
                 </WizardHint>
               </>
             ) : (
-              <WizardHint
-                hintType="item-button-bought-by-someone"
-                text="Någon annan har redan köpt denna present">
-                <span className="whitespace-pre">🎁 Köpt 🎁</span>
+              <WizardHint {...getHint('item-button-bought-by-someone')}>
+                <span className="whitespace-pre p-2 rounded-sm m-auto">
+                  🎁 Köpt 🎁
+                </span>
               </WizardHint>
             )}
           </>
         ) : isReservedBy && !isReservedByMe ? (
           <span>Reserverad</span>
         ) : (
-          <WizardHint
-            hintType="item-button-reserve"
-            text="Reservera denna present (så ingen annan köper samma)">
+          <WizardHint {...getHint('item-button-buy')}>
             <Button
               variant="secondary"
               className="bg-white/10"

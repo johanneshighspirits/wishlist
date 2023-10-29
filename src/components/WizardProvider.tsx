@@ -20,9 +20,11 @@ type WizardState = {
   activeId: string;
   hints: Record<string, Hint>;
   readHintTypes: Set<string>;
+  isReady: boolean;
 };
 
 type Action =
+  | { type: 'initReadHints'; readHints: Set<string> }
   | { type: 'registerHint'; hintType: string; uid: string }
   | { type: 'setActiveId'; uid: string }
   | { type: 'markAsRead'; hintType: string }
@@ -40,6 +42,13 @@ const WizardContext = createContext<
 
 function reducer(state: WizardState, action: Action): WizardState {
   switch (action.type) {
+    case 'initReadHints': {
+      return {
+        ...state,
+        readHintTypes: action.readHints,
+        isReady: true,
+      };
+    }
     case 'registerHint': {
       return {
         ...state,
@@ -76,11 +85,12 @@ const initialState: WizardState = {
   hints: {},
   readHintTypes: new Set(),
   activeId: '',
+  isReady: false,
 };
 
 let intersectionObserver: IntersectionObserver;
 
-const getInitialState = () => {
+const getLocalState = () => {
   if (typeof window !== 'undefined') {
     try {
       const array: string[] = JSON.parse(
@@ -98,8 +108,13 @@ const getInitialState = () => {
 };
 
 export const WizardProvider = ({ children }: PropsWithChildren) => {
-  const [state, dispatch] = useReducer(reducer, getInitialState());
+  const [state, dispatch] = useReducer(reducer, initialState);
   const firstVisibleElementRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const localState = getLocalState();
+    dispatch({ type: 'initReadHints', readHints: localState.readHintTypes });
+  }, []);
 
   useEffect(() => {
     function handleIntersection(entries: IntersectionObserverEntry[]) {
@@ -166,7 +181,7 @@ export function useWizard() {
   }
 
   const {
-    state: { hints, activeId, readHintTypes },
+    state: { hints, activeId, readHintTypes, isReady },
     dispatch,
   } = ctx;
 
@@ -216,5 +231,6 @@ export function useWizard() {
     markAsRead,
     isHintRead,
     activeId,
+    isReady,
   };
 }

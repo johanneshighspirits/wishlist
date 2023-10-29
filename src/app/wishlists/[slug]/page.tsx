@@ -5,6 +5,7 @@ import { getServerUserId } from '@/lib/auth';
 import { getWishlist } from '@/lib/wishlists';
 import { WishlistKey } from '@/lib/wishlists/constants';
 import { Wishlist } from '@/lib/wishlists/types';
+import { randomRadialGradient } from '@/utils/random';
 import { kv } from '@vercel/kv';
 import { unstable_cache } from 'next/cache';
 
@@ -18,7 +19,12 @@ const idFromSlug = unstable_cache(
   { revalidate: 24 * 60 * 60 }
 );
 
-const DEV_CACHE = false;
+const DEV_CACHE = true;
+const bgImg = [
+  randomRadialGradient(6),
+  randomRadialGradient(4),
+  randomRadialGradient(3),
+].join(',');
 
 const fetchWishlist = async (slug: string): Promise<Wishlist> => {
   if (DEV_CACHE) {
@@ -27,6 +33,7 @@ const fetchWishlist = async (slug: string): Promise<Wishlist> => {
       title: 'title',
       slug: 'slug',
       shortURL: 'shortURL',
+      bgImg,
       items: [
         {
           id: 'id',
@@ -34,6 +41,28 @@ const fetchWishlist = async (slug: string): Promise<Wishlist> => {
           description: 'description',
           isBoughtBy: '123',
           isBoughtByMe: false,
+          href: 'https://www.google.com',
+        },
+        {
+          id: 'id3',
+          title: 'title3',
+          description: 'description3',
+          isBoughtBy: 'me',
+          isBoughtByMe: true,
+        },
+        {
+          id: 'id4',
+          title: 'title4',
+          description: 'description4',
+          isReservedBy: '1234',
+          isReservedByMe: false,
+        },
+        {
+          id: 'id5',
+          title: 'title5',
+          description: 'description5',
+          isReservedBy: 'me',
+          isReservedByMe: true,
         },
         {
           id: 'id2',
