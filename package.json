@@ -11,7 +11,7 @@
   "dependencies": {
     "@vercel/kv": "^0.2.3",
     "clsx": "^2.0.0",
-    "next": "^14.0.0",
+    "next": "^14.0.1",
     "next-auth": "^4.24.4",
     "react": "^18",
     "react-dom": "^18"

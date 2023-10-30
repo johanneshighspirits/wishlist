@@ -41,7 +41,7 @@ export const WizardHint = ({
         ?.previousElementSibling as HTMLDivElement;
       if (!wizardIdRef.current && targetElement) {
         wizardIdRef.current = `${hintType}:${
-          crypto.randomUUID().split('-')[0]
+          globalThis.crypto.randomUUID().split('-')[0]
         }`;
         registerHint(hintType, wizardIdRef.current, targetElement);
       }

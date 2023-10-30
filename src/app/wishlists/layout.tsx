@@ -1,7 +1,5 @@
 import { PropsWithChildren } from 'react';
 
-export const runtime = 'edge';
-
 export default function WishlistLayout({ children }: PropsWithChildren) {
   return (
     <div className="w-full items-center justify-between font-mono text-sm lg:flex">

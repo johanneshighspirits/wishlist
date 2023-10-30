@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { addWishlistItem } from '@/lib/wishlists';
 import { UserError } from '@/lib/result/error';
 
-export const runtime = 'edge';
-
 export const POST = async (
   req: NextRequest,
   { params }: { params: { wishlistId: string } }
