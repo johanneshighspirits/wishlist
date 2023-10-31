@@ -6,6 +6,7 @@ import {
 } from 'react';
 import { FieldConfig, ValidationError } from './types';
 import { validateField } from './Validators';
+import clsx from 'clsx';
 
 type FormState<T extends string> = {
   fields: {
@@ -134,10 +135,12 @@ const getInitialState = <T extends string>(fields: FieldConfig<T>[]) => {
 export const Form = ({
   fields,
   action,
+  className,
   children,
 }: PropsWithChildren<{
   fields: FieldConfig<any>[];
   action?: (data: FormData) => Promise<any>;
+  className?: string;
 }>) => {
   const [state, dispatch] = useReducer(reducer, getInitialState(fields));
   const value = { state, dispatch };
@@ -145,7 +148,10 @@ export const Form = ({
   return (
     <FormContext.Provider value={value}>
       <form
-        className="flex flex-col gap-2 lg:gap-4 w-full max-w-xl mx-auto my-4"
+        className={clsx(
+          'flex flex-col gap-2 lg:gap-4 w-full max-w-xl mx-auto my-4',
+          className
+        )}
         action={
           action
             ? async (...props) => {

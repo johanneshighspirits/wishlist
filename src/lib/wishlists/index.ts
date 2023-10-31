@@ -1,3 +1,5 @@
+'use server';
+
 import { generateShortUrl, slugify } from '@/utils/url';
 import { WishlistKey } from './constants';
 import { Invitation, Wishlist, WishlistItem } from './types';
@@ -170,7 +172,7 @@ export const editWishlistItem = async (
     ...wishlistItem,
   };
   await kv.hset(key, editedWishlistItem);
-  return editedWishlistItem;
+  return editedWishlistItem as WishlistItem;
 };
 
 export const deleteWishlistItem = async ({

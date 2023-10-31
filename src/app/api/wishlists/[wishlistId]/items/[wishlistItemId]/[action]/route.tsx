@@ -3,7 +3,13 @@ import { editWishlistItem, deleteWishlistItem } from '@/lib/wishlists';
 import { UserError } from '@/lib/result/error';
 import { getServerUserId } from '@/lib/auth';
 
-export type DBAction = 'reserve' | 'unreserve' | 'buy' | 'unbuy' | 'delete';
+export type DBAction =
+  | 'reserve'
+  | 'unreserve'
+  | 'buy'
+  | 'unbuy'
+  | 'delete'
+  | 'edit';
 
 export const POST = async (
   req: NextRequest,

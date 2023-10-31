@@ -6,6 +6,11 @@ import clsx from 'clsx';
 import { DBAction } from '@/app/api/wishlists/[wishlistId]/items/[wishlistItemId]/[action]/route';
 import { WizardHint } from './WizardHint';
 import { getHint } from '@/lib/wizard/hints';
+import { Form } from './forms/Form';
+import { wishlistItemFields } from './CreateWishlistItem';
+import { Input } from './forms/Input';
+import { SubmitButton } from './forms/SubmitButton';
+import { editWishlistItem } from '@/lib/wishlists';
 
 export const WishlistItems = ({
   wishlistId,
@@ -23,6 +28,20 @@ export const WishlistItems = ({
   if (!items.length) {
     return null;
   }
+
+  const handleEdited = (id: string, editedItem: WishlistItem) => {
+    onEdit(
+      items.map((item) => {
+        if (item.id === id) {
+          return {
+            ...item,
+            ...editedItem,
+          };
+        }
+        return item;
+      })
+    );
+  };
 
   const handleClick = (id: string, action: DBAction) => async () => {
     setProcessing(action);
@@ -91,9 +110,11 @@ export const WishlistItems = ({
         .map((item) => (
           <Item
             isReceiver={isReceiver}
+            wishlistId={wishlistId}
             item={item}
             key={item.id}
             onClick={handleClick}
+            onEdited={handleEdited}
             processing={processing}
           />
         ))}
@@ -103,7 +124,9 @@ export const WishlistItems = ({
 
 type ItemProps = {
   item: WishlistItem;
+  wishlistId?: string;
   onClick: (id: string, action: DBAction) => () => void;
+  onEdited?: (id: string, item: WishlistItem) => void;
   processing?: DBAction;
 };
 
@@ -111,8 +134,11 @@ const Item = ({
   item,
   isReceiver,
   onClick,
+  onEdited,
   processing,
 }: ItemProps & { isReceiver?: boolean }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [buttonText, setButtonText] = useState('Spara ändringar');
   const { id, href, imageURL, title, description, isBoughtBy, isReservedBy } =
     item;
 
@@ -132,49 +158,97 @@ const Item = ({
         isReservedBy ? 'bg-white/5' : 'bg-white/20'
       )}
       key={id}>
-      <WizardHint {...getHint('external-link')} isDisabled={!href}>
-        <ExternalLinkWrapper
-          href={href}
-          className="flex flex-col h-full rounded-sm">
-          {imageURL && imageURL.startsWith('https') ? (
-            <Image
-              className="m-auto"
-              src={imageURL}
-              alt={title}
-              width={90}
-              height={90}
-            />
-          ) : (
-            <span className="m-auto text-3xl">💝</span>
-          )}
-          {href && (
-            <span className="text-center text-xs text-sky-200 underline">
-              länk
-            </span>
-          )}
-        </ExternalLinkWrapper>
-      </WizardHint>
+      {isEditing ? (
+        <div className="col-span-4 lg:col-span-3">
+          <h3 className="font-headline text-2xl">Redigera önskan</h3>
+          <Form
+            className="border-4 border-dotted border-orange-300 p-4 rounded-xl"
+            action={async (data) => {
+              setButtonText('Sparar ändringar, vänta...');
+              const editedItem: Partial<WishlistItem> = {};
+              wishlistItemFields.forEach((field) => {
+                const value = data.get(field.name);
+                if (value !== null) {
+                  (editedItem as any)[field.name] = value;
+                }
+              });
+              const result = await editWishlistItem({
+                ...editedItem,
+                id,
+              });
+              console.log(result);
+              setButtonText('Spara ändringar');
+              setIsEditing(false);
+              onEdited?.(id, result);
+            }}
+            fields={wishlistItemFields.map((field) => {
+              console.log(field.name);
+              return {
+                ...field,
+                initialValue: (item as any)[field.name] || '',
+              };
+            })}>
+            {wishlistItemFields.map((field) => {
+              return <Input name={field.name} key={field.name} />;
+            })}
+            <SubmitButton>{buttonText}</SubmitButton>
+          </Form>
+        </div>
+      ) : (
+        <>
+          <WizardHint {...getHint('external-link')} isDisabled={!href}>
+            <ExternalLinkWrapper
+              href={href}
+              className="flex flex-col h-full rounded-sm">
+              {imageURL && imageURL.startsWith('https') ? (
+                <Image
+                  className="m-auto"
+                  src={imageURL}
+                  alt={title}
+                  width={90}
+                  height={90}
+                />
+              ) : (
+                <span className="m-auto text-3xl">💝</span>
+              )}
+              {href && (
+                <span className="text-center text-xs text-sky-200 underline">
+                  länk
+                </span>
+              )}
+            </ExternalLinkWrapper>
+          </WizardHint>
 
-      <ExternalLinkWrapper
-        href={href}
-        className="flex flex-col col-span-3 lg:col-span-1 gap-1 items-start">
-        <p className="font-headline text-lg">{title}</p>
-        {description && <p>{description}</p>}
-      </ExternalLinkWrapper>
+          <ExternalLinkWrapper
+            href={href}
+            className="flex flex-col col-span-3 lg:col-span-1 gap-1 items-start">
+            <p className="font-headline text-lg">{title}</p>
+            {description && <p>{description}</p>}
+          </ExternalLinkWrapper>
 
-      {isReceiver ? null : (
-        <Actions
-          item={item}
-          processing={processing}
-          onClick={onClick}></Actions>
+          {isReceiver ? null : (
+            <Actions
+              item={item}
+              processing={processing}
+              onClick={onClick}></Actions>
+          )}
+
+          <div className="absolute flex gap-1 top-2 right-2 z-10">
+            <button
+              className="py-1 px-3 hover:bg-orange-500 rounded-lg"
+              disabled={processing === 'edit'}
+              onClick={() => setIsEditing(true)}>
+              ✎
+            </button>
+            <button
+              className="py-1 px-3 hover:bg-red-900 rounded-lg"
+              disabled={processing === 'delete'}
+              onClick={handleDelete}>
+              x
+            </button>
+          </div>
+        </>
       )}
-
-      <button
-        className="absolute top-0 right-0 py-1 px-3 z-10 hover:bg-red-900 rounded-lg"
-        disabled={processing === 'delete'}
-        onClick={handleDelete}>
-        x
-      </button>
     </li>
   );
 };

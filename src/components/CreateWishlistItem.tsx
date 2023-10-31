@@ -17,7 +17,7 @@ function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit | undefined) {
 
 const defaultButtonText = 'Lägg till i önskelistan (+)';
 
-const fields: FieldConfig<string>[] = [
+export const wishlistItemFields: FieldConfig<string>[] = [
   {
     name: 'title',
     type: 'text',
@@ -70,7 +70,7 @@ export const CreateWishlistItem = ({
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg border-white">
       <Form
-        fields={fields}
+        fields={wishlistItemFields}
         action={async (data) => {
           setButtonText('Lägger till i önskelistan, vänta...');
           const addItemToWishlist = createWishlistItem.bind(null, wishlistId);
@@ -78,7 +78,7 @@ export const CreateWishlistItem = ({
           setButtonText(defaultButtonText);
           onCreated(wishlistItem);
         }}>
-        {fields.map((field) => {
+        {wishlistItemFields.map((field) => {
           return <Input name={field.name} key={field.name} />;
         })}
         <SubmitButton>{buttonText}</SubmitButton>
