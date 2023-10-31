@@ -159,7 +159,7 @@ const Item = ({
       )}
       key={id}>
       {isEditing ? (
-        <div className="col-span-4 lg:col-span-3">
+        <div className="col-span-4">
           <h3 className="font-headline text-2xl">Redigera önskan</h3>
           <Form
             className="border-4 border-dotted border-orange-300 p-4 rounded-xl"
@@ -176,13 +176,11 @@ const Item = ({
                 ...editedItem,
                 id,
               });
-              console.log(result);
               setButtonText('Spara ändringar');
               setIsEditing(false);
               onEdited?.(id, result);
             }}
             fields={wishlistItemFields.map((field) => {
-              console.log(field.name);
               return {
                 ...field,
                 initialValue: (item as any)[field.name] || '',
@@ -191,7 +189,17 @@ const Item = ({
             {wishlistItemFields.map((field) => {
               return <Input name={field.name} key={field.name} />;
             })}
-            <SubmitButton>{buttonText}</SubmitButton>
+            <div className="flex gap-4 justify-center items-center">
+              <Button
+                variant="secondary"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsEditing(false);
+                }}>
+                Avbryt
+              </Button>
+              <SubmitButton>{buttonText}</SubmitButton>
+            </div>
           </Form>
         </div>
       ) : (
