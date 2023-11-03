@@ -149,13 +149,15 @@ export const inviteEmailToWishlist = (
 };
 
 export const addWishlistItem = async (
-  wishlistItem: Omit<WishlistItem, 'id'>,
+  wishlistItem: Omit<WishlistItem, 'id' | 'timestamp'>,
   wishlistId: string
 ) => {
   const id = crypto.randomUUID();
+  const timestamp = Date.now();
   const newWishlistItem = {
     ...wishlistItem,
     id,
+    timestamp,
   };
   await kv.hset(`${WishlistKey.WishlistItem}:${id}`, newWishlistItem);
   await kv.sadd(`${WishlistKey.WishlistItems}:${wishlistId}`, id);

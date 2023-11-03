@@ -19,6 +19,8 @@ export const FantasyBackground = ({
           randomRadialGradient(3),
         ].join(',')
       );
+    } else {
+      setBg(backgroundImage);
     }
   }, [backgroundImage]);
   return (

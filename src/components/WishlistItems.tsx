@@ -93,31 +93,36 @@ export const WishlistItems = ({
     setProcessing(undefined);
   };
 
+  const sortedItems = [...items]
+    .sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
+    .reduce<WishlistItem[][]>(
+      (result, item) => {
+        const [available, reserved, bought] = result;
+        if (item.isReservedBy) {
+          reserved.push(item);
+        } else if (item.isBoughtBy) {
+          bought.push(item);
+        } else {
+          available.push(item);
+        }
+        return result;
+      },
+      [[], [], []]
+    );
+
   return (
     <ul className="grid gap-4 p-4 lg:p-12">
-      {[...items]
-        .sort((a, b) => {
-          const aIsReserved = Number(
-            Boolean(a.isReservedBy || a.isReservedByMe)
-          );
-          const bIsReserved = Number(
-            Boolean(b.isReservedBy || b.isReservedByMe)
-          );
-          const aIsBought = Number(Boolean(a.isBoughtBy || a.isBoughtByMe));
-          const bIsBought = Number(Boolean(b.isBoughtBy || b.isBoughtByMe));
-          return aIsBought + aIsReserved - (bIsBought + bIsReserved);
-        })
-        .map((item) => (
-          <Item
-            isReceiver={isReceiver}
-            wishlistId={wishlistId}
-            item={item}
-            key={item.id}
-            onClick={handleClick}
-            onEdited={handleEdited}
-            processing={processing}
-          />
-        ))}
+      {sortedItems.flat().map((item) => (
+        <Item
+          isReceiver={isReceiver}
+          wishlistId={wishlistId}
+          item={item}
+          key={item.id}
+          onClick={handleClick}
+          onEdited={handleEdited}
+          processing={processing}
+        />
+      ))}
     </ul>
   );
 };
@@ -147,15 +152,15 @@ const Item = ({
       'Vill du verkligen ta bort denna present från önskelistan?'
     );
     if (shouldDelete) {
-      onClick(id, 'delete');
+      onClick(id, 'delete')();
     }
   };
   return (
     <li
       className={clsx(
-        'relative grid grid-cols-4 lg:grid-cols-[80px_repeat(3,1fr)] lg:items-center border p-4 rounded-md gap-4 lg:min-h-24',
-        isBoughtBy ? 'opacity-80 border-white/30' : 'border-white',
-        isReservedBy ? 'bg-white/5' : 'bg-white/20'
+        'relative grid grid-cols-4 lg:grid-cols-[80px_repeat(3,1fr)] lg:items-center border px-4 py-6 rounded-md gap-4 lg:min-h-24',
+        isBoughtBy ? 'opacity-70 border-white/30' : 'border-white',
+        isReservedBy || isBoughtBy ? 'bg-white/5' : 'bg-white/20'
       )}
       key={id}>
       {isEditing ? (
@@ -241,7 +246,7 @@ const Item = ({
               onClick={onClick}></Actions>
           )}
 
-          <div className="absolute flex gap-1 top-2 right-2 z-10">
+          <div className="absolute flex top-1 right-1 z-10">
             <button
               className="py-1 px-3 hover:bg-orange-500 rounded-lg"
               disabled={processing === 'edit'}
@@ -328,6 +333,7 @@ const Actions = ({
           )}
         </div>
       )}
+
       <div className="flex flex-col gap-2 col-span-4 lg:col-span-1 lg:items-center">
         {isBoughtBy ? (
           <>
@@ -354,9 +360,7 @@ const Actions = ({
               </WizardHint>
             )}
           </>
-        ) : isReservedBy && !isReservedByMe ? (
-          <span>Reserverad</span>
-        ) : (
+        ) : isReservedByMe || !isReservedBy ? (
           <WizardHint {...getHint('item-button-buy')}>
             <Button
               variant="secondary"
@@ -366,7 +370,7 @@ const Actions = ({
               Markera som köpt
             </Button>
           </WizardHint>
-        )}
+        ) : null}
       </div>
     </>
   );
