@@ -4,7 +4,8 @@ import { generateShortUrl, slugify } from '@/utils/url';
 import { WishlistKey } from './constants';
 import { Invitation, Wishlist, WishlistItem } from './types';
 import { kv } from '@vercel/kv';
-import { getServerUserEmail, getServerUserId } from '../auth';
+import { getServerUser, getServerUserEmail, getServerUserId } from '../auth';
+import { revalidateTag, unstable_cache } from 'next/cache';
 
 export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let length = 6;
@@ -25,24 +26,62 @@ export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   return uuid;
 };
 
+export const cachedUserHasAccess = unstable_cache(
+  async (wishlistId: string, userEmail: string) => {
+    console.count(`cachedUserHasAccess ${wishlistId} ${userEmail}`);
+    const isMember = await kv.sismember(
+      `${WishlistKey.WishlistMembers}:${wishlistId}`,
+      userEmail
+    );
+    return isMember === 1;
+  },
+  [WishlistKey.WishlistMembers],
+  { revalidate: 3600, tags: [WishlistKey.WishlistMembers] }
+);
+
+export const cachedGetWishlist = unstable_cache(
+  async (wishlistId: string) => {
+    console.count(`cachedGetWishlist ${wishlistId}`);
+    return kv.hgetall<Wishlist>(`${WishlistKey.Wishlist}:${wishlistId}`);
+  },
+  [WishlistKey.Wishlist],
+  { revalidate: 3600, tags: [WishlistKey.Wishlist] }
+);
+
+export const cachedGetItems = unstable_cache(
+  async (wishlistId: string) => {
+    console.count(
+      `cachedGetItems [${WishlistKey.WishlistItems}, ${WishlistKey.WishlistItem}] ${wishlistId}`
+    );
+    const itemIds = await kv.smembers(
+      `${WishlistKey.WishlistItems}:${wishlistId}`
+    );
+    const items = await Promise.all(
+      itemIds.map((itemId) =>
+        kv.hgetall<WishlistItem>(`${WishlistKey.WishlistItem}:${itemId}`)
+      )
+    );
+    return items.filter((item) => item !== null) as WishlistItem[];
+  },
+  [WishlistKey.WishlistItems, WishlistKey.WishlistItem],
+  {
+    revalidate: 3600,
+    tags: [WishlistKey.WishlistItems, WishlistKey.WishlistItem],
+  }
+);
+
 export const getWishlist = async (id: string): Promise<Wishlist | null> => {
-  const userEmail = await getServerUserEmail();
-  const hasAccess =
-    (await kv.sismember(`${WishlistKey.WishlistMembers}:${id}`, userEmail)) ===
-    1;
+  const { email, id: userId } = await getServerUser();
+  const hasAccess = await cachedUserHasAccess(id, email);
   if (!hasAccess) {
     throw new Error('Du har inte behörighet att se denna önskelista');
   }
-  const wishlist = await kv.hgetall<Wishlist>(`${WishlistKey.Wishlist}:${id}`);
+  const wishlist = await cachedGetWishlist(id);
   if (!wishlist) {
     return null;
   }
-  const userId = await getServerUserId();
-  const isReceiver = wishlist.receiverEmail === userEmail;
-  const itemIds = await kv.smembers(`${WishlistKey.WishlistItems}:${id}`);
-  const items = (await Promise.all(
-    itemIds.map((itemId) => kv.hgetall(`${WishlistKey.WishlistItem}:${itemId}`))
-  ).then((items) => items.filter((item) => item !== null))) as WishlistItem[];
+  const isReceiver = wishlist.receiverEmail === email;
+  const items = await cachedGetItems(id);
 
   const clientItems: WishlistItem[] = items.map((item) => {
     if (isReceiver) {
@@ -104,6 +143,9 @@ export const addWishlist = async (
       newWishlist.shortURL
     );
   }
+  revalidateTag(WishlistKey.Wishlist);
+  revalidateTag(WishlistKey.WishlistItems);
+  revalidateTag(WishlistKey.WishlistMembers);
   return newWishlist;
 };
 
@@ -115,6 +157,7 @@ export const addEmailsToWishlist = async (
 ) => {
   const invitedBy = await getServerUserEmail();
   await kv.sadd(`${WishlistKey.WishlistMembers}:${wishlistId}`, ...emails);
+  revalidateTag(WishlistKey.WishlistMembers);
   for (const email of emails) {
     await inviteEmailToWishlist(
       email,
@@ -161,6 +204,8 @@ export const addWishlistItem = async (
   };
   await kv.hset(`${WishlistKey.WishlistItem}:${id}`, newWishlistItem);
   await kv.sadd(`${WishlistKey.WishlistItems}:${wishlistId}`, id);
+  revalidateTag(WishlistKey.WishlistItem);
+  revalidateTag(WishlistKey.WishlistItems);
   return newWishlistItem;
 };
 
@@ -174,6 +219,8 @@ export const editWishlistItem = async (
     ...wishlistItem,
   };
   await kv.hset(key, editedWishlistItem);
+  revalidateTag(WishlistKey.WishlistItem);
+  revalidateTag(WishlistKey.WishlistItems);
   return editedWishlistItem as WishlistItem;
 };
 
@@ -187,6 +234,8 @@ export const deleteWishlistItem = async ({
   const itemKey = `${WishlistKey.WishlistItem}:${wishlistItemId}`;
   await kv.del(itemKey);
   await kv.srem(`${WishlistKey.WishlistItems}:${wishlistId}`, wishlistItemId);
+  revalidateTag(WishlistKey.WishlistItem);
+  revalidateTag(WishlistKey.WishlistItems);
   return {
     success: true,
     message: `WishlistItem ${wishlistItemId} deleted from wishlist ${wishlistId}`,
@@ -215,5 +264,6 @@ export const handleInvitation = async (wishlistId: string, accept: boolean) => {
   } else {
     await kv.srem(`${WishlistKey.UserWishlists}:${userId}`, wishlistId);
   }
+  revalidateTag(WishlistKey.UserWishlists);
   return updatedInvitation;
 };

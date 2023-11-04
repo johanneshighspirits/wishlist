@@ -6,9 +6,6 @@ export const getServerUserId = async () => {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
   if (!userId) {
-    // throw new Error('Unauthorized', {
-    //   cause: { status: 401, statusText: 'Unauthorized' },
-    // });
     return redirect('/login');
   }
   return userId;
@@ -18,4 +15,12 @@ export const getServerUserEmail = async () => {
   const session = await getServerSession(authOptions);
   const userEmail = session?.user?.email ?? '';
   return userEmail;
+};
+
+export const getServerUser = async () => {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return redirect('/login');
+  }
+  return { email: session?.user?.email ?? '', id: session?.user?.id ?? '' };
 };
