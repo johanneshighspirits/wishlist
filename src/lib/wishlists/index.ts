@@ -28,7 +28,6 @@ export const getUniqueShortURL = async (uuid: string): Promise<string> => {
 
 export const cachedUserHasAccess = unstable_cache(
   async (wishlistId: string, userEmail: string) => {
-    console.count(`cachedUserHasAccess ${wishlistId} ${userEmail}`);
     const isMember = await kv.sismember(
       `${WishlistKey.WishlistMembers}:${wishlistId}`,
       userEmail
@@ -41,7 +40,6 @@ export const cachedUserHasAccess = unstable_cache(
 
 export const cachedGetWishlist = unstable_cache(
   async (wishlistId: string) => {
-    console.count(`cachedGetWishlist ${wishlistId}`);
     return kv.hgetall<Wishlist>(`${WishlistKey.Wishlist}:${wishlistId}`);
   },
   [WishlistKey.Wishlist],
@@ -50,9 +48,6 @@ export const cachedGetWishlist = unstable_cache(
 
 export const cachedGetItems = unstable_cache(
   async (wishlistId: string) => {
-    console.count(
-      `cachedGetItems [${WishlistKey.WishlistItems}, ${WishlistKey.WishlistItem}] ${wishlistId}`
-    );
     const itemIds = await kv.smembers(
       `${WishlistKey.WishlistItems}:${wishlistId}`
     );
@@ -211,9 +206,9 @@ export const addWishlistItem = async (
 
 export const editWishlistItem = async (
   wishlistItem: Partial<WishlistItem> & { id: WishlistItem['id'] }
-) => {
+): Promise<WishlistItem> => {
   const key = `${WishlistKey.WishlistItem}:${wishlistItem.id}`;
-  const item = kv.hgetall(key);
+  const item = await kv.hgetall<WishlistItem>(key);
   const editedWishlistItem = {
     ...item,
     ...wishlistItem,

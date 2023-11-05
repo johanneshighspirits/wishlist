@@ -4,7 +4,6 @@ export const debounce = (callback: Function, ms: number) => {
     clearTimeout(timer);
     timer = setTimeout(() => {
       clearTimeout(timer);
-      console.log('running callback');
       callback();
     }, ms);
   };

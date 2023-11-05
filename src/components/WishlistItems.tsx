@@ -129,7 +129,7 @@ export const WishlistItems = ({
 
 type ItemProps = {
   item: WishlistItem;
-  wishlistId?: string;
+  wishlistId: string;
   onClick: (id: string, action: DBAction) => () => void;
   onEdited?: (id: string, item: WishlistItem) => void;
   processing?: DBAction;
@@ -138,6 +138,7 @@ type ItemProps = {
 const Item = ({
   item,
   isReceiver,
+  wishlistId,
   onClick,
   onEdited,
   processing,
@@ -186,14 +187,30 @@ const Item = ({
               onEdited?.(id, result);
             }}
             fields={wishlistItemFields.map((field) => {
+              if (field.name === 'wishlistId') {
+                return {
+                  ...field,
+                  initialValue: wishlistId,
+                };
+              }
               return {
                 ...field,
                 initialValue: (item as any)[field.name] || '',
               };
             })}>
             {wishlistItemFields.map((field) => {
+              if (field.name === 'wishlistId') {
+                return (
+                  <Input
+                    name={'wishlistId'}
+                    key={field.name}
+                    initialValue={wishlistId}
+                  />
+                );
+              }
               return <Input name={field.name} key={field.name} />;
             })}
+
             <div className="flex gap-4 justify-center items-center">
               <Button
                 variant="secondary"
@@ -288,7 +305,7 @@ const Actions = ({
   item: { id, isBoughtBy, isBoughtByMe, isReservedBy, isReservedByMe },
   onClick,
   processing,
-}: ItemProps) => {
+}: Omit<ItemProps, 'wishlistId'>) => {
   return (
     <>
       {isBoughtBy ? (

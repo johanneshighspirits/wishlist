@@ -36,7 +36,6 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
       wishlist.shortURL
     );
     const addedMembers = await enhancedAddMembers(data);
-    console.log(`Added ${addedMembers.join(', ')}`);
     setButtonText('Medlemmar tillagda');
     alert(`Inbjudna medlemmar: ${addedMembers.join(', ')}`);
     setFieldNames([]);

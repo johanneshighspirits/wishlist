@@ -52,9 +52,11 @@ export const wishlistItemFields: FieldConfig<string>[] = [
   },
   {
     name: 'imageURL',
-    type: 'url',
-    placeholderText: 'Lägg till en bildlänk',
-    labelText: 'Bild',
+    type: 'file',
+  },
+  {
+    name: 'wishlistId',
+    type: 'hidden',
   },
 ];
 
@@ -70,7 +72,15 @@ export const CreateWishlistItem = ({
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg border-white">
       <Form
-        fields={wishlistItemFields}
+        fields={wishlistItemFields.map((field) => {
+          if (field.name === 'wishlistId') {
+            return {
+              ...field,
+              initialValue: wishlistId,
+            };
+          }
+          return field;
+        })}
         action={async (data) => {
           setButtonText('Lägger till i önskelistan, vänta...');
           const addItemToWishlist = createWishlistItem.bind(null, wishlistId);
@@ -79,6 +89,15 @@ export const CreateWishlistItem = ({
           onCreated(wishlistItem);
         }}>
         {wishlistItemFields.map((field) => {
+          if (field.name === 'wishlistId') {
+            return (
+              <Input
+                name={'wishlistId'}
+                key={field.name}
+                initialValue={wishlistId}
+              />
+            );
+          }
           return <Input name={field.name} key={field.name} />;
         })}
         <SubmitButton>{buttonText}</SubmitButton>

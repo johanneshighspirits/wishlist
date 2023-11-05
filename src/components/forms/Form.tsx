@@ -200,6 +200,9 @@ export function useForm() {
   const setIsDirty = (name: string, isDirty: boolean) => {
     dispatch({ type: 'setIsDirty', name, isDirty });
   };
+  const setIsProcessing = (isProcessing: boolean) => {
+    dispatch({ type: 'setIsProcessing', isProcessing });
+  };
 
   const addField = (config: FieldConfig<any>) => {
     dispatch({ type: 'addField', config });
@@ -215,6 +218,7 @@ export function useForm() {
     setIsDirty,
     isValid,
     isProcessing,
+    setIsProcessing,
     addField,
   };
 }

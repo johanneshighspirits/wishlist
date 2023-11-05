@@ -2,6 +2,7 @@ import { ChangeEventHandler, FocusEventHandler } from 'react';
 import { useForm } from './Form';
 import { FieldConfig } from './types';
 import clsx from 'clsx';
+import { ImageUploader } from '../ImageUploader';
 
 export function Input<FieldName extends string>({
   name,
@@ -9,6 +10,9 @@ export function Input<FieldName extends string>({
   const { getValueAndConfig, setValue, setIsDirty } = useForm();
   const { value, error, config, isDirty } = getValueAndConfig(name);
   const { labelText, placeholderText, infoText, type = 'text' } = config;
+  if (type === 'file') {
+    return <ImageUploader name={name} />;
+  }
   const isCheckbox = type === 'checkbox';
 
   const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
@@ -38,12 +42,16 @@ export function Input<FieldName extends string>({
   };
   return (
     <label
-      className={clsx(
-        'flex flex-1 gap-4 pb-2',
-        isCheckbox
-          ? 'flex-row items-center cursor-pointer accent-sky-600'
-          : 'flex-col'
-      )}>
+      className={
+        type === 'hidden'
+          ? 'hidden'
+          : clsx(
+              'flex flex-1 gap-4 pb-2',
+              isCheckbox
+                ? 'flex-row items-center cursor-pointer accent-sky-600'
+                : 'flex-col'
+            )
+      }>
       {isCheckbox ? (
         <>
           <input className={clsx('h-6 w-6 rounded-sm')} {...inputProps}></input>
