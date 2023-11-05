@@ -19,7 +19,6 @@ const idFromSlug = unstable_cache(
   { revalidate: 24 * 60 * 60 }
 );
 
-const DEV_CACHE = false;
 const bgImg = [
   randomRadialGradient(6),
   randomRadialGradient(4),
@@ -27,7 +26,7 @@ const bgImg = [
 ].join(',');
 
 const fetchWishlist = async (slug: string): Promise<Wishlist> => {
-  if (DEV_CACHE) {
+  if (process.env.DEV_CACHE === 'true') {
     return {
       id: 'id',
       title: 'title',

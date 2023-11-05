@@ -2,7 +2,37 @@ import type { PutBlobResult } from '@vercel/blob';
 import { useState, useRef, ChangeEventHandler } from 'react';
 import { useForm } from './forms/Form';
 
-export const ImageUploader = ({ name: formFieldName }: { name: string }) => {
+const createBlob = async (
+  filename: string,
+  canvas: HTMLCanvasElement,
+  wishlistId: string
+) => {
+  return new Promise<PutBlobResult>((resolve, reject) => {
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        return reject('Could not save the image, try again later...');
+      }
+      const blobFile = new File([blob], filename, { type: 'image/png' });
+      const response = await fetch(
+        `/api/upload?filename=${filename}&wishlistId=${wishlistId}`,
+        {
+          method: 'POST',
+          body: blobFile,
+        }
+      );
+      const newBlob: PutBlobResult = await response.json();
+      return resolve(newBlob);
+    });
+  });
+};
+
+export const ImageUploader = ({
+  name: formFieldName,
+  options = { width: 320, height: 320 },
+}: {
+  name: string;
+  options?: { width: number; height: number };
+}) => {
   const { getValue, setIsProcessing } = useForm();
   const wishlistId = getValue('wishlistId');
   const [statusText, setStatusText] = useState('Välj en bild från din dator');
@@ -24,30 +54,25 @@ export const ImageUploader = ({ name: formFieldName }: { name: string }) => {
       const ctx = canvasRef.current!.getContext('2d');
       const ratio = img.width / img.height;
       const isLandscape = ratio < 1;
-      const croppedWidth = isLandscape ? 320 : img.width * (320 / img.height);
-      const croppedHeight = isLandscape ? img.height * (320 / img.width) : 320;
+      const croppedWidth = isLandscape
+        ? options.width
+        : img.width * (options.height / img.height);
+      const croppedHeight = isLandscape
+        ? img.height * (options.width / img.width)
+        : options.height;
       ctx?.drawImage(img, 0, 0, croppedWidth, croppedHeight);
-
-      canvasRef.current!.toBlob(async (blob) => {
-        if (!blob) {
-          setIsProcessing(false);
-          throw new Error('Could not save the image, try again later...');
-        }
-        const blobFile = new File([blob], file.name, { type: 'image/png' });
-        const formData = new FormData();
-        formData.append('file', blobFile);
-        const response = await fetch(
-          `/api/upload?filename=${file.name}&wishlistId=${wishlistId}`,
-          {
-            method: 'POST',
-            body: blobFile,
-          }
+      try {
+        const blob = await createBlob(
+          file.name,
+          canvasRef.current!,
+          wishlistId
         );
-        const newBlob = (await response.json()) as PutBlobResult;
         setStatusText('Bilden är uppladdad');
-        setBlob(newBlob);
-        setIsProcessing(false);
-      });
+        setBlob(blob);
+      } catch (err) {
+        console.error(err);
+      }
+      setIsProcessing(false);
     };
     img.src = objectURL;
   };
@@ -79,8 +104,8 @@ export const ImageUploader = ({ name: formFieldName }: { name: string }) => {
       <canvas
         ref={canvasRef}
         className="h-48 my-4"
-        width="320"
-        height="320"></canvas>
+        width={options.width}
+        height={options.height}></canvas>
     </div>
   );
 };
