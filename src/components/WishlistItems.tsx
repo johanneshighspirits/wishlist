@@ -11,6 +11,7 @@ import { wishlistItemFields } from './CreateWishlistItem';
 import { Input } from './forms/Input';
 import { SubmitButton } from './forms/SubmitButton';
 import { editWishlistItem } from '@/lib/wishlists';
+import { useSearchParams } from 'next/navigation';
 
 export const WishlistItems = ({
   wishlistId,
@@ -306,6 +307,10 @@ const Actions = ({
   onClick,
   processing,
 }: Omit<ItemProps, 'wishlistId'>) => {
+  const searchParams = useSearchParams();
+  if (searchParams.get('readonly')) {
+    return null;
+  }
   return (
     <>
       {isBoughtBy ? (

@@ -31,6 +31,7 @@ export const WizardHint = ({
     isReady,
   } = useWizard();
   const hintRef = useRef<HTMLDivElement | null>(null);
+  const pointerRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const wizardIdRef = useRef<string | undefined>();
   const isActive = wizardIdRef.current && activeId === wizardIdRef.current;
@@ -61,6 +62,11 @@ export const WizardHint = ({
             // Prefer right positioning
             const availableRightSpace =
               Math.abs(window.innerWidth - right) - POINTER_WIDTH - MARGIN;
+            if (pointerRef.current) {
+              pointerRef.current.style.position = '';
+              pointerRef.current.style.left = '';
+              pointerRef.current.style.top = '';
+            }
             if (availableRightSpace > 300) {
               // Position RIGHT
               hintRef.current.dataset.position = `right`;
@@ -72,11 +78,20 @@ export const WizardHint = ({
               // Position BOTTOM
               hintRef.current.dataset.position = `bottom`;
               hintRef.current.style.top = `${bottom + POINTER_HEIGHT}px`;
-              hintRef.current.style.left = `${x + width / 2}px`;
-              hintRef.current.style.transform = 'translateX(-50%)';
+              const hintWidth = hintRef.current.getBoundingClientRect().width;
+              const leftPos = Math.max(MARGIN, x - hintWidth / 2);
+              hintRef.current.style.left = `${leftPos}px`;
               hintRef.current.style.maxWidth = `${
-                Math.abs(window.innerWidth - x + width / 2) - MARGIN
+                Math.abs(window.innerWidth - leftPos) - MARGIN
               }px`;
+
+              if (pointerRef.current) {
+                if (leftPos === MARGIN) {
+                  pointerRef.current.style.position = 'fixed';
+                  pointerRef.current.style.left = `${x - 8 + width / 2}px`;
+                  pointerRef.current.style.top = `${bottom + MARGIN}px`;
+                }
+              }
             }
             hintRef.current.style.opacity = '1';
             hintRef.current.style.pointerEvents = 'auto';
@@ -138,6 +153,8 @@ export const WizardHint = ({
               ✓
             </button>
             <div
+              ref={pointerRef}
+              style={{ transition: 'left 500ms ease-out, top 500ms ease-out' }}
               className={clsx(
                 'block absolute w-4 h-4 text-base',
                 "group-data-[position='right']:-left-6 group-data-[position='right']:top-1/2 group-data-[position='right']:animate-hint-x",
