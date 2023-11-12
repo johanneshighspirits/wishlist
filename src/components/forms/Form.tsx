@@ -152,6 +152,11 @@ export const Form = ({
           'flex flex-col gap-2 lg:gap-4 w-full max-w-xl mx-auto my-4',
           className
         )}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+          }
+        }}
         action={
           action
             ? async (...props) => {

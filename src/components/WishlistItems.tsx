@@ -1,5 +1,5 @@
 import { WishlistItem } from '@/lib/wishlists/types';
-import { PropsWithChildren, Suspense, useState } from 'react';
+import { PropsWithChildren, Suspense, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Button } from './common/Button';
 import clsx from 'clsx';
@@ -144,8 +144,9 @@ const Item = ({
   onEdited,
   processing,
 }: ItemProps & { isReceiver?: boolean }) => {
-  const [isEditing, setIsEditing] = useState(false);
   const [buttonText, setButtonText] = useState('Spara ändringar');
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
+
   const { id, href, imageURL, title, description, isBoughtBy, isReservedBy } =
     item;
 
@@ -157,129 +158,138 @@ const Item = ({
       onClick(id, 'delete')();
     }
   };
+
+  const conditionalClasses = isReceiver
+    ? 'border-white'
+    : clsx(
+        isBoughtBy ? 'opacity-70 border-white/30' : 'border-white',
+        isReservedBy || isBoughtBy ? 'bg-white/5' : 'bg-white/20'
+      );
   return (
     <li
       className={clsx(
         'relative grid grid-cols-4 lg:grid-cols-[80px_repeat(3,1fr)] lg:items-center border px-4 py-6 rounded-md gap-4 lg:min-h-24',
-        isBoughtBy ? 'opacity-70 border-white/30' : 'border-white',
-        isReservedBy || isBoughtBy ? 'bg-white/5' : 'bg-white/20'
+        conditionalClasses
       )}
       key={id}>
-      {isEditing ? (
-        <div className="col-span-4">
-          <h3 className="font-headline text-2xl">Redigera önskan</h3>
-          <Form
-            className="border-4 border-dotted border-orange-300 p-4 rounded-xl"
-            action={async (data) => {
-              setButtonText('Sparar ändringar, vänta...');
-              const editedItem: Partial<WishlistItem> = {};
-              wishlistItemFields.forEach((field) => {
-                const value = data.get(field.name);
-                if (value !== null) {
-                  (editedItem as any)[field.name] = value;
-                }
-              });
-              const result = await editWishlistItem({
-                ...editedItem,
-                id,
-              });
-              setButtonText('Spara ändringar');
-              setIsEditing(false);
-              onEdited?.(id, result);
-            }}
-            fields={wishlistItemFields.map((field) => {
-              if (field.name === 'wishlistId') {
-                return {
-                  ...field,
-                  initialValue: wishlistId,
-                };
+      <dialog
+        ref={dialogRef}
+        className="p-12 dark:bg-black dark:text-white rounded-xl backdrop:bg-black/30 dark:backdrop:bg-white/20 backdrop:backdrop-blur-sm">
+        <h3 className="font-headline text-2xl">Redigera önskan</h3>
+        <Form
+          action={async (data) => {
+            setButtonText('Sparar ändringar, vänta...');
+            const editedItem: Partial<WishlistItem> = {};
+            wishlistItemFields.forEach((field) => {
+              const value = data.get(field.name);
+              if (value !== null) {
+                (editedItem as any)[field.name] = value;
               }
+            });
+            const result = await editWishlistItem({
+              ...editedItem,
+              id,
+            });
+            setButtonText('Spara ändringar');
+            dialogRef.current?.close();
+            onEdited?.(id, result);
+          }}
+          fields={wishlistItemFields.map((field) => {
+            if (field.name === 'wishlistId') {
               return {
                 ...field,
-                initialValue: (item as any)[field.name] || '',
+                initialValue: wishlistId,
               };
-            })}>
-            {wishlistItemFields.map((field) => {
-              if (field.name === 'wishlistId') {
-                return (
-                  <Input
-                    name={'wishlistId'}
-                    key={field.name}
-                    initialValue={wishlistId}
-                  />
-                );
-              }
-              return <Input name={field.name} key={field.name} />;
-            })}
-
-            <div className="flex gap-4 justify-center items-center">
-              <Button
-                variant="secondary"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsEditing(false);
-                }}>
-                Avbryt
-              </Button>
-              <SubmitButton>{buttonText}</SubmitButton>
-            </div>
-          </Form>
-        </div>
-      ) : (
-        <>
-          <WizardHint {...getHint('external-link')} isDisabled={!href}>
-            <ExternalLinkWrapper
-              href={href}
-              className="flex flex-col h-full rounded-sm">
-              {imageURL && imageURL.startsWith('https') ? (
-                <Image
-                  className="m-auto"
-                  src={imageURL}
-                  alt={title}
-                  width={90}
-                  height={90}
+            }
+            return {
+              ...field,
+              initialValue: (item as any)[field.name] || '',
+            };
+          })}>
+          {wishlistItemFields.map((field, i) => {
+            if (field.name === 'wishlistId') {
+              return (
+                <Input
+                  autoFocus={i === 0}
+                  name={'wishlistId'}
+                  key={field.name}
+                  initialValue={wishlistId}
                 />
-              ) : (
-                <span className="m-auto text-3xl">💝</span>
-              )}
-              {href && (
-                <span className="text-center text-xs text-sky-200 underline">
-                  länk
-                </span>
-              )}
-            </ExternalLinkWrapper>
-          </WizardHint>
+              );
+            }
 
-          <ExternalLinkWrapper
-            href={href}
-            className="flex flex-col col-span-3 lg:col-span-1 gap-1 items-start">
-            <p className="font-headline text-lg">{title}</p>
-            {description && <p>{description}</p>}
-          </ExternalLinkWrapper>
+            return (
+              <Input autoFocus={i === 0} name={field.name} key={field.name} />
+            );
+          })}
 
-          {isReceiver ? null : (
-            <Actions
-              item={item}
-              processing={processing}
-              onClick={onClick}></Actions>
-          )}
-
-          <div className="absolute flex top-1 right-1 z-10">
-            <button
-              className="py-1 px-3 hover:bg-orange-500 rounded-lg"
-              disabled={processing === 'edit'}
-              onClick={() => setIsEditing(true)}>
-              ✎
-            </button>
-            <button
-              className="py-1 px-3 hover:bg-red-900 rounded-lg"
-              disabled={processing === 'delete'}
-              onClick={handleDelete}>
-              x
-            </button>
+          <div className="flex gap-4 justify-center items-center">
+            <Button
+              variant="secondary"
+              onClick={(e) => {
+                e.preventDefault();
+                dialogRef.current?.close();
+              }}>
+              Avbryt
+            </Button>
+            <SubmitButton>{buttonText}</SubmitButton>
           </div>
-        </>
+        </Form>
+      </dialog>
+
+      <WizardHint {...getHint('external-link')} isDisabled={!href}>
+        <ExternalLinkWrapper
+          href={href}
+          className="flex flex-col h-full rounded-sm">
+          {imageURL && imageURL.startsWith('https') ? (
+            <Image
+              className="m-auto"
+              src={imageURL}
+              alt={title}
+              width={90}
+              height={90}
+            />
+          ) : (
+            <span className="m-auto text-3xl">💝</span>
+          )}
+          {href && (
+            <span className="text-center text-xs text-sky-200 underline">
+              länk
+            </span>
+          )}
+        </ExternalLinkWrapper>
+      </WizardHint>
+
+      <ExternalLinkWrapper
+        href={href}
+        className="flex flex-col col-span-3 lg:col-span-1 gap-1 items-start">
+        <p className="font-headline text-lg">{title}</p>
+        {description && <p>{description}</p>}
+      </ExternalLinkWrapper>
+
+      {isReceiver ? null : (
+        <Actions
+          item={item}
+          processing={processing}
+          onClick={onClick}></Actions>
       )}
+
+      <div className="absolute flex top-1 right-1 z-10">
+        <button
+          className="py-1 px-3 hover:bg-orange-500 rounded-lg"
+          disabled={processing === 'edit'}
+          onClick={() => {
+            dialogRef.current?.showModal();
+          }}>
+          ✎
+        </button>
+        <button
+          className="py-1 px-3 hover:bg-red-900 rounded-lg"
+          disabled={processing === 'delete'}
+          onClick={handleDelete}>
+          x
+        </button>
+      </div>
     </li>
   );
 };

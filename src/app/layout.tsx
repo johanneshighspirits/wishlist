@@ -30,7 +30,7 @@ export default function RootLayout({
         className={clsx(
           inter.variable,
           glegoo.variable,
-          'min-h-screen flex flex-col font-body'
+          'min-h-screen flex flex-col font-body [&:has(dialog[open])]:overflow-hidden'
         )}>
         <Protected>
           <Header />

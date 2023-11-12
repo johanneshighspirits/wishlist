@@ -60,7 +60,13 @@ export default async function WishlistsPage() {
                     />
                   </div>
                   <OpenWishlist id={w.shortURL} className="mx-auto" />
-                  <OpenWishlist readOnly id={w.shortURL} className="mx-auto" />
+                  {!w.isReceiver && (
+                    <OpenWishlist
+                      readOnly
+                      id={w.shortURL}
+                      className="mx-auto"
+                    />
+                  )}
                 </FantasyBackground>
               </li>
             ))}

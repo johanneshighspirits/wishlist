@@ -6,7 +6,8 @@ import { ImageUploader } from '../ImageUploader';
 
 export function Input<FieldName extends string>({
   name,
-}: FieldConfig<FieldName>) {
+  autoFocus,
+}: FieldConfig<FieldName> & { autoFocus?: boolean }) {
   const { getValueAndConfig, setValue, setIsDirty } = useForm();
   const { value, error, config, isDirty } = getValueAndConfig(name);
   const { labelText, placeholderText, infoText, type = 'text' } = config;
@@ -61,6 +62,7 @@ export function Input<FieldName extends string>({
         <>
           {label}
           <input
+            autoFocus={autoFocus}
             className={clsx(
               'text-black bg-slate-200 focus:bg-white py-2 px-4 rounded-sm w-full placeholder:text-gray-700 focus:placeholder:text-gray-400',
               hasError && 'border border-red-500 bg-red-200'
