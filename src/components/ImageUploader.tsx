@@ -78,7 +78,7 @@ export const ImageUploader = ({
   };
 
   return (
-    <div className="flex gap-8 w-full justify-between items-center">
+    <div className="flex flex-col lg:flex-row lg:gap-8 w-full justify-between items-center">
       {!blob ? (
         <label className="flex flex-col gap-4 py-4 cursor-pointer">
           <p>{statusText}</p>
@@ -103,7 +103,7 @@ export const ImageUploader = ({
       )}
       <canvas
         ref={canvasRef}
-        className="h-48 my-4"
+        className="h-auto w-32 lg:h-48 mb-2 lg:my-4"
         width={options.width}
         height={options.height}></canvas>
     </div>

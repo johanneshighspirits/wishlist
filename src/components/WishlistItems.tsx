@@ -174,7 +174,7 @@ const Item = ({
       key={id}>
       <dialog
         ref={dialogRef}
-        className="p-12 dark:bg-black dark:text-white rounded-xl backdrop:bg-black/30 dark:backdrop:bg-white/20 backdrop:backdrop-blur-sm">
+        className="p-12 max-w-screen xl:max-w-xl dark:bg-black dark:text-white rounded-xl backdrop:bg-black/30 dark:backdrop:bg-white/20 backdrop:backdrop-blur-sm">
         <h3 className="font-headline text-2xl">Redigera önskan</h3>
         <Form
           action={async (data) => {
