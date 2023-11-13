@@ -15,8 +15,8 @@ import { useSearchParams } from 'next/navigation';
 
 export const WishlistItems = ({
   wishlistId,
-  isReceiver,
   items,
+  isReceiver,
   onEdit,
 }: {
   wishlistId: string;
@@ -25,6 +25,8 @@ export const WishlistItems = ({
   onEdit: (editedItems: WishlistItem[]) => void;
 }) => {
   const [processing, setProcessing] = useState<DBAction>();
+  const searchParams = useSearchParams();
+  const isReadonly = isReceiver || !!searchParams.get('readonly');
 
   if (!items.length) {
     return null;
@@ -115,7 +117,7 @@ export const WishlistItems = ({
     <ul className="grid gap-4 p-4 lg:p-12">
       {sortedItems.flat().map((item) => (
         <Item
-          isReceiver={isReceiver}
+          isReadonly={isReadonly}
           wishlistId={wishlistId}
           item={item}
           key={item.id}
@@ -138,12 +140,12 @@ type ItemProps = {
 
 const Item = ({
   item,
-  isReceiver,
+  isReadonly,
   wishlistId,
   onClick,
   onEdited,
   processing,
-}: ItemProps & { isReceiver?: boolean }) => {
+}: ItemProps & { isReadonly?: boolean }) => {
   const [buttonText, setButtonText] = useState('Spara ändringar');
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
@@ -159,7 +161,7 @@ const Item = ({
     }
   };
 
-  const conditionalClasses = isReceiver
+  const conditionalClasses = isReadonly
     ? 'border-white'
     : clsx(
         isBoughtBy ? 'opacity-70 border-white/30' : 'border-white',
@@ -267,7 +269,7 @@ const Item = ({
         {description && <p>{description}</p>}
       </ExternalLinkWrapper>
 
-      {isReceiver ? null : (
+      {isReadonly ? null : (
         <Actions
           item={item}
           processing={processing}
@@ -317,10 +319,6 @@ const Actions = ({
   onClick,
   processing,
 }: Omit<ItemProps, 'wishlistId'>) => {
-  const searchParams = useSearchParams();
-  if (searchParams.get('readonly')) {
-    return null;
-  }
   return (
     <>
       {isBoughtBy ? (
