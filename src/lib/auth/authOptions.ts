@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv';
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { WishlistKey } from '../wishlists/constants';
 
 export const authOptions = {
   providers: [
@@ -22,7 +23,7 @@ export const authOptions = {
           },
         };
         const { id, name, firstname, lastname, email, image } = user;
-        await kv.hset(`user:${user.id}`, {
+        await kv.hset(`${WishlistKey.User}:${user.id}`, {
           id,
           name,
           firstname,

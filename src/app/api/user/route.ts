@@ -1,3 +1,4 @@
+import { WishlistKey } from './../../../lib/wishlists/constants';
 import { authOptions } from '@/lib/auth/authOptions';
 import { kv } from '@vercel/kv';
 import { getServerSession } from 'next-auth/next';
@@ -7,7 +8,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (session) {
-    const user = await kv.hgetall('user:dev');
+    const user = await kv.hgetall(`${WishlistKey.User}:dev`);
     return NextResponse.json(user);
   } else {
     console.log(session);
