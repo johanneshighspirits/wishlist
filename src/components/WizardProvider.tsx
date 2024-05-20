@@ -1,5 +1,6 @@
 'use client';
 
+import { storeReadHints } from '@/lib/wizard/actions';
 import {
   createContext,
   useContext,
@@ -24,7 +25,8 @@ type WizardState = {
 };
 
 type Action =
-  | { type: 'initReadHints'; readHints: Set<string> }
+  // | { type: 'initReadHints'; readHints: Set<string> }
+  | { type: 'setIsReady'; isReady: boolean }
   | { type: 'registerHint'; hintType: string; uid: string }
   | { type: 'setActiveId'; uid: string }
   | { type: 'markAsRead'; hintType: string }
@@ -42,13 +44,19 @@ const WizardContext = createContext<
 
 function reducer(state: WizardState, action: Action): WizardState {
   switch (action.type) {
-    case 'initReadHints': {
+    case 'setIsReady': {
       return {
         ...state,
-        readHintTypes: action.readHints,
-        isReady: true,
+        isReady: action.isReady,
       };
     }
+    // case 'initReadHints': {
+    //   return {
+    //     ...state,
+    //     readHintTypes: action.readHints,
+    //     isReady: true,
+    //   };
+    // }
     case 'registerHint': {
       return {
         ...state,
@@ -90,30 +98,21 @@ const initialState: WizardState = {
 
 let intersectionObserver: IntersectionObserver;
 
-const getLocalState = () => {
-  if (typeof window !== 'undefined') {
-    try {
-      const array: string[] = JSON.parse(
-        globalThis.window?.localStorage.getItem('readHintTypes') || '[]'
-      );
-      return {
-        ...initialState,
-        readHintTypes: new Set<string>(array),
-      };
-    } catch {
-      return initialState;
-    }
-  }
-  return initialState;
-};
-
-export const WizardProvider = ({ children }: PropsWithChildren) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+export const WizardProvider = ({
+  readHints,
+  children,
+}: PropsWithChildren<{ readHints: Set<string> }>) => {
+  const [state, dispatch] = useReducer(reducer, {
+    ...initialState,
+    readHintTypes: readHints,
+  });
   const firstVisibleElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const localState = getLocalState();
-    dispatch({ type: 'initReadHints', readHints: localState.readHintTypes });
+    dispatch({
+      type: 'setIsReady',
+      isReady: true,
+    });
   }, []);
 
   useEffect(() => {
@@ -149,25 +148,6 @@ export const WizardProvider = ({ children }: PropsWithChildren) => {
     state,
     dispatch,
   };
-
-  if (globalThis.window?.requestIdleCallback) {
-    globalThis.window?.requestIdleCallback(
-      () => {
-        globalThis.window?.localStorage.setItem(
-          'readHintTypes',
-          JSON.stringify([...state.readHintTypes])
-        );
-      },
-      { timeout: 1000 }
-    );
-  } else {
-    setTimeout(() => {
-      globalThis.window?.localStorage.setItem(
-        'readHintTypes',
-        JSON.stringify([...state.readHintTypes])
-      );
-    }, 0);
-  }
 
   return (
     <WizardContext.Provider value={value}>{children}</WizardContext.Provider>
@@ -214,6 +194,7 @@ export function useWizard() {
   const markAsRead = useCallback(
     (hintType: string) => {
       dispatch({ type: 'markAsRead', hintType });
+      storeReadHints([...readHintTypes, hintType]);
       setTimeout(() => {
         Array.from(document.querySelectorAll('[data-hint-type]')).forEach(
           (element) => {
@@ -222,7 +203,7 @@ export function useWizard() {
         );
       }, 100);
     },
-    [dispatch]
+    [readHintTypes, dispatch]
   );
 
   return {
