@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "env": "vercel env pull .env.local --environment=development",
+    "env:prod": "vercel env pull .env.production.local --environment=production",
     "test": "vitest --ui",
     "test:ci": "vitest run"
   },
