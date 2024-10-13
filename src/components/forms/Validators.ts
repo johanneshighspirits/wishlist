@@ -1,14 +1,8 @@
 import { ValidationError, ValidatorFn } from './types';
 
-type ValidatorFnNames = 'required' | 'email' | 'url';
+type ValidatorFnNames = 'required' | 'email' | 'url' | 'notInList';
 
 const emailRegex = /^.*@.*\..*$/i; // HAHA, fix this
-
-export const Validators: Record<ValidatorFnNames, () => ValidatorFn> = {
-  required: () => required,
-  email: () => email,
-  url: () => url,
-} as const;
 
 const required: ValidatorFn = (val: string) => {
   return val?.trim() ? null : { message: 'Detta fält är obligatoriskt' };
@@ -32,6 +26,22 @@ const url: ValidatorFn = (val: string) => {
     return { message: 'Det här är inte en giltig URL' };
   }
 };
+const notInList =
+  ({ list, message }: { list: string[]; message: string }): ValidatorFn =>
+  (val: string) => {
+    console.log({ val, list });
+    if (!val?.trim()) {
+      return null;
+    }
+    return !list.includes(val.trim()) ? null : { message };
+  };
+
+export const Validators = {
+  required: () => required,
+  email: () => email,
+  url: () => url,
+  notInList,
+} as const;
 
 export const validateField = (
   value: string,

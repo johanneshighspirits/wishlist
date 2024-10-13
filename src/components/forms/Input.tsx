@@ -23,7 +23,7 @@ export function Input<FieldName extends string>({
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setValue(
       name,
-      isCheckbox ? (e.target.checked ? 'on' : 'off') : e.target.value,
+      isCheckbox ? (e.target.checked ? e.target.name : 'off') : e.target.value,
       config
     );
   };
@@ -47,10 +47,10 @@ export function Input<FieldName extends string>({
         type === 'hidden'
           ? 'hidden'
           : clsx(
-              'flex flex-1 gap-4 pb-2',
+              'flex flex-1 gap-4',
               isCheckbox
-                ? 'flex-row items-center cursor-pointer accent-sky-600'
-                : 'flex-col'
+                ? 'flex-row items-center cursor-pointer accent-sky-600 border border-white/25 has-[:checked]:border-white has-[:checked]:bg-white/10 rounded-md p-2'
+                : 'flex-col pb-2'
             )
       }>
       {isCheckbox ? (

@@ -129,6 +129,11 @@ export const addWishlist = async (
     newWishlist.receiverEmail,
     userEmail
   );
+  await kv.sadd(
+    `${WishlistKey.UserRecentMembers}:${userId}`,
+    newWishlist.receiverEmail
+  );
+
   if (newWishlist.receiverEmail && newWishlist.receiverEmail !== userEmail) {
     await inviteEmailToWishlist(
       newWishlist.receiverEmail,
@@ -150,9 +155,11 @@ export const addEmailsToWishlist = async (
   wishlistTitle: string,
   shortURL: string
 ) => {
-  const invitedBy = await getServerUserEmail();
+  const { id: userId, email: invitedBy } = await getServerUser();
   await kv.sadd(`${WishlistKey.WishlistMembers}:${wishlistId}`, ...emails);
+  await kv.sadd(`${WishlistKey.UserRecentMembers}:${userId}`, ...emails);
   revalidateTag(WishlistKey.WishlistMembers);
+  revalidateTag(WishlistKey.UserRecentMembers);
   for (const email of emails) {
     await inviteEmailToWishlist(
       email,

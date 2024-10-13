@@ -28,7 +28,8 @@ type Action<T extends string> =
   | { type: 'reset'; fields: FieldConfig<T>[] }
   | { type: 'setIsProcessing'; isProcessing: boolean }
   | { type: 'setIsDirty'; name: string; isDirty: boolean }
-  | { type: 'addField'; config: FieldConfig<T> };
+  | { type: 'addField'; config: FieldConfig<T> }
+  | { type: 'updateField'; name: string; config: Partial<FieldConfig<T>> };
 
 type Dispatch = <T extends string>(action: Action<T>) => void;
 
@@ -100,6 +101,21 @@ const reducer = <T extends string>(
             error: null,
           },
         ],
+      };
+    }
+    case 'updateField': {
+      return {
+        ...state,
+        fields: state.fields.map((field) => {
+          if (field.config.name === action.name) {
+            console.log({ action });
+            return {
+              ...field,
+              ...action.config,
+            };
+          }
+          return field;
+        }),
       };
     }
     default: {
@@ -212,6 +228,9 @@ export function useForm() {
   const addField = (config: FieldConfig<any>) => {
     dispatch({ type: 'addField', config });
   };
+  const updateField = (name: string, config: Partial<FieldConfig<any>>) => {
+    dispatch({ type: 'updateField', name, config });
+  };
 
   const isValid = fields.every(({ isValid }) => isValid);
 
@@ -225,5 +244,6 @@ export function useForm() {
     isProcessing,
     setIsProcessing,
     addField,
+    updateField,
   };
 }

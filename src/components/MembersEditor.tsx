@@ -3,7 +3,13 @@
 import { Wishlist } from '@/lib/wishlists/types';
 import { Form, useForm } from './forms/Form';
 import { SubmitButton } from './forms/SubmitButton';
-import { Dispatch, SetStateAction, useState } from 'react';
+import {
+  Dispatch,
+  PropsWithChildren,
+  SetStateAction,
+  Suspense,
+  useState,
+} from 'react';
 import { FieldConfig } from './forms/types';
 import { Validators } from './forms/Validators';
 import { Input } from './forms/Input';
@@ -52,8 +58,10 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
         <MoreEmailFields
           wishlistId={wishlist.id}
           fieldNames={fieldNames}
-          setFieldNames={setFieldNames}
-        />
+          setFieldNames={setFieldNames}></MoreEmailFields>
+        {/* <RecentMembers wishlistId={wishlist.id}>
+
+        </RecentMembers> */}
         {fieldNames.length > 0 ? (
           <SubmitButton>{buttonText}</SubmitButton>
         ) : null}
@@ -71,46 +79,66 @@ const MoreEmailFields = ({
   fieldNames: string[];
   setFieldNames: Dispatch<SetStateAction<string[]>>;
 }) => {
-  const { addField } = useForm();
-  const [members, setMembers] = useState([]);
+  const { addField, updateField } = useForm();
+  const [members, setMembers] = useState<string[]>([]);
   return (
     <>
-      {members.length > 0 ? (
-        <div className="my-2">
-          <p className="italic text-gray-300">Redan inbjudna:</p>
-          <p>{members.join(', ')}</p>
-        </div>
-      ) : null}
       <Button
         variant="secondary"
-        className="self-end mb-4"
+        className="self-end my-4"
         onClick={(e) => {
           e.preventDefault();
           if (fieldNames.length === 0) {
             fetch(`/api/wishlists/${wishlistId}/members`, { method: 'POST' })
               .then((res) => res.json())
-              .then((result) => {
-                setMembers(result);
-              });
+              .then(
+                (result: { members: string[]; recentMembers: string[] }) => {
+                  const { members, recentMembers } = result;
+                  setMembers(members);
+                  recentMembers.forEach((recentMember, i) => {
+                    addField({
+                      name: recentMember,
+                      type: 'checkbox',
+                      initialValue: recentMember,
+                      labelText: recentMember,
+                    });
+                  });
+                  setFieldNames((fieldNames) => [
+                    ...fieldNames,
+                    `member-${fieldNames.length}`,
+                    ...recentMembers,
+                  ]);
+                  addField({
+                    name: `member-${fieldNames.length}`,
+                    type: 'email',
+                    labelText: `Lägg till medlem ${
+                      fieldNames.length > 1 ? fieldNames.length + 1 : ''
+                    }`,
+                    placeholderText: 'Epostadress att bjuda in',
+                    validators: [
+                      Validators.email(),
+                      Validators.notInList({
+                        list: members,
+                        message: 'Användaren är redan inbjuden',
+                      }),
+                    ],
+                  });
+                }
+              );
           }
-          addField({
-            name: `member-${fieldNames.length}`,
-            type: 'email',
-            labelText: `Lägg till medlem ${
-              fieldNames.length > 1 ? fieldNames.length + 1 : ''
-            }`,
-            placeholderText: 'Epostadress att bjuda in',
-            validators: [Validators.email()],
-          });
-          setFieldNames((fieldNames) => [
-            ...fieldNames,
-            `member-${fieldNames.length}`,
-          ]);
         }}>
         {fieldNames.length > 0
           ? 'Lägg till ytterligare en epost'
           : 'Dela listan'}
       </Button>
+      {members.length > 0 ? (
+        <div className="flex flex-col gap-2 my-2">
+          <div>
+            <p className="italic text-gray-300">Redan inbjudna:</p>
+            <p>{members.join(', ')}</p>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 };
