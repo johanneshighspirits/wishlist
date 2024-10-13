@@ -6,18 +6,24 @@ import {
   addWishlist,
   addEmailsToWishlist,
 } from '@/lib/wishlists';
+import validator from 'validator';
 
 export async function createWishlist(formData: FormData) {
   const userId = await getServerUserId();
   const userEmail = await getServerUserEmail();
-  const title = (formData.get('title') as string) || '[Namnlös önskelista]';
+  const title = validator.escape(
+    (formData.get('title') as string) || '[Namnlös önskelista]'
+  );
   const isMine = (formData.get('isMine') as string) || 'off';
   const receiverEmail = (formData.get('receiverEmail') as string) || '';
-  const bgImg = (formData.get('bgImg') as string) || '';
+  const safeReceiverEmail = validator.isEmail(receiverEmail)
+    ? receiverEmail
+    : '';
+  const bgImg = validator.escape((formData.get('bgImg') as string) || '');
   return addWishlist(
     {
       title,
-      receiverEmail: isMine === 'on' ? userEmail : receiverEmail,
+      receiverEmail: isMine === 'on' ? userEmail : safeReceiverEmail,
       bgImg,
     },
     userId
@@ -28,11 +34,20 @@ export async function createWishlistItem(
   wishlistId: string,
   formData: FormData
 ) {
-  const title = (formData.get('title') as string) || '[Ingen titel]';
-  const description = (formData.get('description') as string) || '';
+  const title = validator.escape(
+    (formData.get('title') as string) || '[Ingen titel]'
+  );
+  const description = validator.escape(
+    (formData.get('description') as string) || ''
+  );
   const href = (formData.get('href') as string) || '';
+  const safeHref = validator.isURL(href) ? href : '';
   const imageURL = (formData.get('imageURL') as string) || '';
-  return addWishlistItem({ title, description, href, imageURL }, wishlistId);
+  const safeImageURL = validator.isURL(imageURL) ? imageURL : '';
+  return addWishlistItem(
+    { title, description, href: safeHref, imageURL: safeImageURL },
+    wishlistId
+  );
 }
 
 export async function addMembersToWishlist(
@@ -42,10 +57,14 @@ export async function addMembersToWishlist(
   formData: FormData
 ) {
   const keys = ((formData.get('keys') as string) || '').split(' ');
-
   const emails = keys
     .map((key) => (formData.get(key) as string) || '')
     .map((email) => email.trim())
-    .filter((email) => !!email);
-  return addEmailsToWishlist(emails, wishlistId, wishlistTitle, shortURL);
+    .filter((email) => validator.isEmail(email));
+  return addEmailsToWishlist(
+    emails,
+    wishlistId,
+    validator.escape(wishlistTitle),
+    shortURL
+  );
 }

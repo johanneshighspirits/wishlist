@@ -6,6 +6,8 @@ import { Invitation, Wishlist, WishlistItem } from './types';
 import { kv } from '@vercel/kv';
 import { getServerUser, getServerUserEmail, getServerUserId } from '../auth';
 import { revalidateTag, unstable_cache } from 'next/cache';
+import validator from 'validator';
+import { sendInvitationEmail } from '../email/sendEmail';
 
 export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let length = 6;
@@ -172,14 +174,17 @@ export const addEmailsToWishlist = async (
   return emails;
 };
 
-export const inviteEmailToWishlist = (
+export const inviteEmailToWishlist = async (
   email: string,
   invitedBy: string,
   wishlistId: string,
   wishlistTitle: string,
   shortURL: string
 ) => {
-  return kv.sadd(
+  if (!validator.isEmail(email)) {
+    throw new Error('Invalid email');
+  }
+  await kv.sadd(
     `${WishlistKey.Invitations}:${email}`,
     JSON.stringify({
       email,
@@ -191,6 +196,7 @@ export const inviteEmailToWishlist = (
       isDeclined: false,
     })
   );
+  await sendInvitationEmail({ receiver: email, invitedBy, wishlistTitle });
 };
 
 export const addWishlistItem = async (

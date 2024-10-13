@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { editWishlistItem, deleteWishlistItem } from '@/lib/wishlists';
 import { UserError } from '@/lib/result/error';
 import { getServerUserId } from '@/lib/auth';
+import { checkWishlistAccess } from '@/lib/wishlists/access';
 
 export type DBAction =
   | 'reserve'
@@ -26,6 +27,7 @@ export const POST = async (
   try {
     const userId = await getServerUserId();
     const { wishlistId, wishlistItemId, action } = params;
+    await checkWishlistAccess({ userId, wishlistId });
     if (action === 'delete') {
       const result = await deleteWishlistItem({ wishlistId, wishlistItemId });
       return NextResponse.json({ result });
