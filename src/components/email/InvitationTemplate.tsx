@@ -32,11 +32,11 @@ export const InvitationTemplateContent = ({
       cellSpacing="0"
       role="presentation"
       style={{
-        height: 424,
-        marginTop: 16,
-        marginBottom: 16,
-        borderRadius: 12,
-        backgroundColor: 'black',
+        height: '424px',
+        marginTop: '16px',
+        marginBottom: '16px',
+        borderRadius: '12px',
+        backgroundColor: '#a73161',
         backgroundImage: bgImg,
         backgroundSize: '200% 200%',
       }}
@@ -71,7 +71,11 @@ export const InvitationTemplateContent = ({
                 color: 'rgb(255,255,255)',
               }}>
               Du har blivit inbjuden till {wishlistTitle}. Inbjudan kommer från{' '}
-              {invitedBy}
+              <Link
+                href={`mailto:${invitedBy}`}
+                style={{ color: '#fff !important' }}>
+                {invitedBy}
+              </Link>
             </Text>
             <Button
               href={`https://jaybo-wishlist.vercel.app/wishlists/${wishlistId}`}
