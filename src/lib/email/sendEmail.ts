@@ -12,6 +12,7 @@ type SendEmailProps = {
   invitedBy: string;
   wishlistTitle: string;
   wishlistId: string;
+  bgImg: string;
 };
 
 export const sendInvitationEmail = async ({
@@ -19,6 +20,7 @@ export const sendInvitationEmail = async ({
   invitedBy,
   wishlistTitle,
   wishlistId,
+  bgImg,
 }: SendEmailProps) => {
   receiver = serverSanitizeUserInput(receiver);
   invitedBy = serverSanitizeUserInput(invitedBy);
@@ -32,6 +34,7 @@ export const sendInvitationEmail = async ({
         invitedBy,
         wishlistTitle,
         wishlistId,
+        bgImg,
       }),
     });
     console.log(`Invitation email sent to ${receiver}`);

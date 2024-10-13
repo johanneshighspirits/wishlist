@@ -54,6 +54,7 @@ export async function addMembersToWishlist(
   wishlistId: string,
   wishlistTitle: string,
   shortURL: string,
+  bgImg: string,
   formData: FormData
 ) {
   const keys = ((formData.get('keys') as string) || '').split(' ');
@@ -65,6 +66,7 @@ export async function addMembersToWishlist(
     emails,
     wishlistId,
     validator.escape(wishlistTitle),
-    shortURL
+    shortURL,
+    bgImg
   );
 }

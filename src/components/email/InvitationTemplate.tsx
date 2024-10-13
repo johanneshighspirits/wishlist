@@ -15,12 +15,14 @@ type InvitationTemplateProps = {
   invitedBy: string;
   wishlistTitle: string;
   wishlistId: string;
+  bgImg: string;
 };
 
 export const InvitationTemplateContent = ({
   invitedBy,
   wishlistTitle,
   wishlistId,
+  bgImg,
 }: InvitationTemplateProps) => (
   <>
     <table
@@ -35,8 +37,7 @@ export const InvitationTemplateContent = ({
         marginBottom: 16,
         borderRadius: 12,
         backgroundColor: 'black',
-        backgroundImage:
-          'radial-gradient(at 64% 47%, rgba(141, 156, 84, 0.3) 0%, rgba(156, 96, 84, 0.3) 25%, rgba(156, 84, 143, 0.3) 50%, rgba(147, 84, 156, 0.3) 75%, rgba(156, 115, 84, 0.3) 100%), radial-gradient(at 16% 51%, rgba(54, 181, 147, 0.3) 0%, rgba(181, 54, 69, 0.3) 33%, rgba(181, 54, 160, 0.3) 67%, rgba(181, 130, 54, 0.3) 100%), radial-gradient(at 17% 38%, rgba(87, 57, 177, 0.3) 0%, rgba(137, 177, 57, 0.3) 50%, rgba(177, 57, 149, 0.3) 100%)',
+        backgroundImage: bgImg,
         backgroundSize: '200% 200%',
       }}
       width="100%">

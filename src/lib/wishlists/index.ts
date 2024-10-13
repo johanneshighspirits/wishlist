@@ -142,7 +142,8 @@ export const addWishlist = async (
       userEmail,
       id,
       newWishlist.title,
-      newWishlist.shortURL
+      newWishlist.shortURL,
+      newWishlist.bgImg || '#f1468e'
     );
   }
   revalidateTag(WishlistKey.Wishlist);
@@ -155,7 +156,8 @@ export const addEmailsToWishlist = async (
   emails: string[],
   wishlistId: string,
   wishlistTitle: string,
-  shortURL: string
+  shortURL: string,
+  bgImg: string
 ) => {
   const { id: userId, email: invitedBy } = await getServerUser();
   await kv.sadd(`${WishlistKey.WishlistMembers}:${wishlistId}`, ...emails);
@@ -168,7 +170,8 @@ export const addEmailsToWishlist = async (
       invitedBy,
       wishlistId,
       wishlistTitle,
-      shortURL
+      shortURL,
+      bgImg
     );
   }
   return emails;
@@ -179,7 +182,8 @@ export const inviteEmailToWishlist = async (
   invitedBy: string,
   wishlistId: string,
   wishlistTitle: string,
-  shortURL: string
+  shortURL: string,
+  bgImg: string
 ) => {
   if (!validator.isEmail(email)) {
     throw new Error('Invalid email');
@@ -201,6 +205,7 @@ export const inviteEmailToWishlist = async (
     invitedBy,
     wishlistTitle,
     wishlistId,
+    bgImg,
   });
 };
 

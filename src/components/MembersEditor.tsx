@@ -40,7 +40,8 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
       null,
       wishlist.id,
       wishlist.title,
-      wishlist.shortURL
+      wishlist.shortURL,
+      wishlist.bgImg || ''
     );
     const addedMembers = await enhancedAddMembers(data);
     setButtonText('Medlemmar tillagda');
