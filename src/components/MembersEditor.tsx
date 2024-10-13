@@ -15,6 +15,7 @@ import { Validators } from './forms/Validators';
 import { Input } from './forms/Input';
 import { Button } from './common/Button';
 import { addMembersToWishlist } from '@/app/actions';
+import clsx from 'clsx';
 
 const fields: FieldConfig<string>[] = [
   // {
@@ -51,12 +52,20 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   return (
     <>
       <p>Dela listan med andra genom att klicka på knappen ↘</p>
-      <Form fields={fields} action={formAction}>
+      <Form
+        fields={fields}
+        action={formAction}
+        className={
+          fieldNames.length > 0
+            ? 'border border-dotted border-white/50 rounded-lg p-4'
+            : ''
+        }>
         {fieldNames.map((fieldName) => {
           return <Input name={fieldName} key={fieldName} />;
         })}
         <MoreEmailFields
           wishlistId={wishlist.id}
+          receiver={wishlist.receiverEmail}
           fieldNames={fieldNames}
           setFieldNames={setFieldNames}></MoreEmailFields>
         {/* <RecentMembers wishlistId={wishlist.id}>
@@ -72,14 +81,16 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
 
 const MoreEmailFields = ({
   wishlistId,
+  receiver,
   fieldNames,
   setFieldNames,
 }: {
   wishlistId: string;
+  receiver?: string;
   fieldNames: string[];
   setFieldNames: Dispatch<SetStateAction<string[]>>;
 }) => {
-  const { addField, updateField } = useForm();
+  const { addField } = useForm();
   const [members, setMembers] = useState<string[]>([]);
   return (
     <>
@@ -135,7 +146,18 @@ const MoreEmailFields = ({
         <div className="flex flex-col gap-2 my-2">
           <div>
             <p className="italic text-gray-300">Redan inbjudna:</p>
-            <p>{members.join(', ')}</p>
+            <ul className="flex flex-wrap gap-x-1 py-2">
+              {members.map((member) => (
+                <li
+                  key={member}
+                  className={clsx(
+                    'after:content-[","] last:after:content-none py-1 px-2 rounded-md',
+                    member === receiver && 'italic bg-white/20'
+                  )}>
+                  {member === receiver ? `💝 ${member} 💝` : member}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       ) : null}
