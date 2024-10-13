@@ -11,12 +11,14 @@ type SendEmailProps = {
   receiver: string;
   invitedBy: string;
   wishlistTitle: string;
+  wishlistId: string;
 };
 
 export const sendInvitationEmail = async ({
   receiver,
   invitedBy,
   wishlistTitle,
+  wishlistId,
 }: SendEmailProps) => {
   receiver = serverSanitizeUserInput(receiver);
   invitedBy = serverSanitizeUserInput(invitedBy);
@@ -29,6 +31,7 @@ export const sendInvitationEmail = async ({
       react: InvitationTemplate({
         invitedBy,
         wishlistTitle,
+        wishlistId,
       }),
     });
     console.log(`Invitation email sent to ${receiver}`);

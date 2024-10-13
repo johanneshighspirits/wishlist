@@ -196,7 +196,12 @@ export const inviteEmailToWishlist = async (
       isDeclined: false,
     })
   );
-  await sendInvitationEmail({ receiver: email, invitedBy, wishlistTitle });
+  await sendInvitationEmail({
+    receiver: email,
+    invitedBy,
+    wishlistTitle,
+    wishlistId,
+  });
 };
 
 export const addWishlistItem = async (
