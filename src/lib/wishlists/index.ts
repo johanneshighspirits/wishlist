@@ -7,7 +7,10 @@ import { kv } from '@vercel/kv';
 import { getServerUser, getServerUserEmail, getServerUserId } from '../auth';
 import { revalidateTag, unstable_cache } from 'next/cache';
 import validator from 'validator';
-import { sendInvitationEmail } from '../email/sendEmail';
+import {
+  sendInvitationAcceptedEmail,
+  sendInvitationEmail,
+} from '../email/sendEmail';
 
 export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let length = 6;
@@ -204,7 +207,7 @@ export const inviteEmailToWishlist = async (
     receiver: email,
     invitedBy,
     wishlistTitle,
-    wishlistId,
+    shortURL,
     bgImg,
   });
 };
@@ -269,6 +272,9 @@ export const handleInvitation = async (wishlistId: string, accept: boolean) => {
   const invitation = allInvitations.find(
     (inv) => inv.wishlistId === wishlistId
   );
+  if (!invitation) {
+    throw new Error('404 Not Found');
+  }
   await kv.srem(`${WishlistKey.Invitations}:${userEmail}`, invitation);
   const updatedInvitation = {
     ...invitation,
@@ -282,6 +288,12 @@ export const handleInvitation = async (wishlistId: string, accept: boolean) => {
   } else {
     await kv.srem(`${WishlistKey.UserWishlists}:${userId}`, wishlistId);
   }
+  await sendInvitationAcceptedEmail({
+    invited: userEmail,
+    invitedBy: invitation.invitedBy,
+    shortURL: invitation.shortURL,
+    wishlistTitle: invitation.wishlistTitle,
+  });
   revalidateTag(WishlistKey.UserWishlists);
   return updatedInvitation;
 };

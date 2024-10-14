@@ -11,19 +11,17 @@ import {
 } from '@react-email/components';
 import { EmailContainer } from './EmailContainer';
 
-type InvitationTemplateProps = {
-  invitedBy: string;
+type InvitationAcceptedTemplateProps = {
+  invited: string;
   wishlistTitle: string;
   shortURL: string;
-  bgImg: string;
 };
 
-export const InvitationTemplateContent = ({
-  invitedBy,
+export const InvitationAcceptedTemplateContent = ({
+  invited,
   wishlistTitle,
   shortURL,
-  bgImg,
-}: InvitationTemplateProps) => (
+}: InvitationAcceptedTemplateProps) => (
   <>
     <table
       align="center"
@@ -36,9 +34,7 @@ export const InvitationTemplateContent = ({
         marginTop: '16px',
         marginBottom: '16px',
         borderRadius: '12px',
-        backgroundColor: '#a73161',
-        backgroundImage: bgImg,
-        backgroundSize: '200% 200%',
+        backgroundColor: '#265691',
       }}
       width="100%">
       <tbody>
@@ -50,7 +46,7 @@ export const InvitationTemplateContent = ({
                 fontWeight: 600,
                 color: 'rgb(229,231,235)',
               }}>
-              Inbjudan
+              Inbjudan accepterad
             </Text>
             <Heading
               as="h1"
@@ -70,12 +66,12 @@ export const InvitationTemplateContent = ({
                 lineHeight: '24px',
                 color: 'rgb(255,255,255)',
               }}>
-              Du har blivit inbjuden till {wishlistTitle}. Inbjudan kommer från{' '}
               <Link
-                href={`mailto:${invitedBy}`}
+                href={`mailto:${invited}`}
                 style={{ color: '#fff !important' }}>
-                {invitedBy}
-              </Link>
+                {invited}
+              </Link>{' '}
+              har accepterat din inbjudan till {wishlistTitle}!
             </Text>
             <Button
               href={`https://jaybo-wishlist.vercel.app/wishlists/${shortURL}`}
@@ -93,7 +89,7 @@ export const InvitationTemplateContent = ({
                 fontWeight: 600,
                 color: 'rgb(17,24,39)',
               }}>
-              Acceptera inbjudan
+              Gå till önskelistan
             </Button>
           </td>
         </tr>
@@ -102,10 +98,12 @@ export const InvitationTemplateContent = ({
   </>
 );
 
-export const InvitationTemplate = (props: InvitationTemplateProps) => {
+export const InvitationAcceptedTemplate = (
+  props: InvitationAcceptedTemplateProps
+) => {
   return (
     <EmailContainer>
-      <InvitationTemplateContent {...props} />
+      <InvitationAcceptedTemplateContent {...props} />
     </EmailContainer>
   );
 };
