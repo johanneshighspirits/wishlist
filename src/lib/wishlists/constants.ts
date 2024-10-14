@@ -9,9 +9,15 @@ export enum WishlistKey {
   WishlistItem = 'wishlist_item',
   /** redis set */
   WishlistItems = 'wishlist_items',
-  /** redis set */
+  /**
+   * ## SET
+   * member emails
+   */
   WishlistMembers = 'wishlist_members',
-  /** redis set */
+  /**
+   * ## SET
+   * all emails user has ever invited
+   */
   UserRecentMembers = 'user_recent_members',
   /** redis hash */
   ShortURL = 'shortURL',

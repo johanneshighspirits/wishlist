@@ -46,7 +46,7 @@ export const InvitationAcceptedTemplateContent = ({
                 fontWeight: 600,
                 color: 'rgb(229,231,235)',
               }}>
-              Inbjudan accepterad
+              {wishlistTitle}
             </Text>
             <Heading
               as="h1"
@@ -56,7 +56,7 @@ export const InvitationAcceptedTemplateContent = ({
                 fontWeight: 700,
                 color: 'rgb(255,255,255)',
               }}>
-              {wishlistTitle}
+              Inbjudan accepterad
             </Heading>
             <Text
               style={{
@@ -80,14 +80,14 @@ export const InvitationAcceptedTemplateContent = ({
                 borderRadius: 8,
                 borderWidth: 1,
                 borderStyle: 'solid',
-                borderColor: 'rgb(229,231,235)',
-                backgroundColor: 'rgb(255,255,255)',
+                borderColor: '#fff',
+                backgroundColor: '#000',
                 paddingLeft: 40,
                 paddingRight: 40,
                 paddingTop: 12,
                 paddingBottom: 12,
                 fontWeight: 600,
-                color: 'rgb(17,24,39)',
+                color: '#fff',
               }}>
               Gå till önskelistan
             </Button>
