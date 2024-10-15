@@ -11,6 +11,7 @@ import {
   sendInvitationAcceptedEmail,
   sendInvitationEmail,
 } from '../email/sendEmail';
+import { checkWishlistAccess } from './access';
 
 export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let length = 6;
@@ -169,6 +170,27 @@ export const addWishlist = async (
   return newWishlist;
 };
 
+export const deleteWishlist = async (wishlist: Wishlist) => {
+  const userId = await getServerUserId();
+  const { id: wishlistId, shortURL } = wishlist;
+  await checkWishlistAccess({ userId, wishlistId });
+  await kv.hdel(`${WishlistKey.Wishlist}:${wishlistId}`);
+  await kv.hdel(`${WishlistKey.ShortURL}:${shortURL}`);
+
+  await kv.srem(`${WishlistKey.UserWishlists}:${userId}`, wishlistId);
+  await kv.del(`${WishlistKey.WishlistMembers}:${wishlistId}`);
+
+  await Promise.all(
+    wishlist.items.map((item) =>
+      deleteWishlistItem({ wishlistId, wishlistItemId: item.id })
+    )
+  );
+  revalidateTag(WishlistKey.Wishlist);
+  revalidateTag(WishlistKey.WishlistItem);
+  revalidateTag(WishlistKey.WishlistItems);
+  revalidateTag(WishlistKey.WishlistMembers);
+};
+
 export const addEmailsToWishlist = async (
   emails: string[],
   wishlistId: string,
@@ -269,8 +291,6 @@ export const deleteWishlistItem = async ({
   const itemKey = `${WishlistKey.WishlistItem}:${wishlistItemId}`;
   await kv.del(itemKey);
   await kv.srem(`${WishlistKey.WishlistItems}:${wishlistId}`, wishlistItemId);
-  revalidateTag(WishlistKey.WishlistItem);
-  revalidateTag(WishlistKey.WishlistItems);
   return {
     success: true,
     message: `WishlistItem ${wishlistItemId} deleted from wishlist ${wishlistId}`,

@@ -3,6 +3,8 @@ import { editWishlistItem, deleteWishlistItem } from '@/lib/wishlists';
 import { UserError } from '@/lib/result/error';
 import { getServerUserId } from '@/lib/auth';
 import { checkWishlistAccess } from '@/lib/wishlists/access';
+import { revalidateTag } from 'next/cache';
+import { WishlistKey } from '@/lib/wishlists/constants';
 
 export type DBAction =
   | 'reserve'
@@ -30,7 +32,13 @@ export const POST = async (
     await checkWishlistAccess({ userId, wishlistId });
     if (action === 'delete') {
       const result = await deleteWishlistItem({ wishlistId, wishlistItemId });
-      return NextResponse.json({ result });
+      if (result.success) {
+        revalidateTag(WishlistKey.WishlistItem);
+        revalidateTag(WishlistKey.WishlistItems);
+        return NextResponse.json({ result });
+      } else {
+        return NextResponse.json({ error: result.message }, { status: 400 });
+      }
     }
     const data = await req.json().catch(() => ({}));
     const wishlistItem = await editWishlistItem({
@@ -52,10 +60,13 @@ export const POST = async (
   } catch (error: any) {
     console.error(error);
     if (error instanceof UserError) {
-      return NextResponse.json({
-        error,
-      });
+      return NextResponse.json(
+        {
+          error,
+        },
+        { status: error.statusCode }
+      );
     }
-    return NextResponse.json({ error });
+    return NextResponse.json({ error }, { status: 500 });
   }
 };
