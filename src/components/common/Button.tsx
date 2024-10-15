@@ -2,7 +2,11 @@ import clsx from 'clsx';
 import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 import { LinkStyles } from './Link';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'tertiary';
+export type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'destructive';
 
 export const ButtonStyles: Record<ButtonVariant, string> = {
   primary:
@@ -11,7 +15,11 @@ export const ButtonStyles: Record<ButtonVariant, string> = {
     'border border-gray-500 hover:border-white border-solid py-3 lg:py-1 px-4 rounded-md',
   tertiary:
     'font-bold underline underline-offset-8 pb-2 hover:text-sky-500 decoration-sky-500 hover:decoration-white',
+  destructive:
+    'border border-red-900 bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-md',
 };
+
+const common = 'w-full md:w-fit';
 
 export const Button = ({
   variant = 'primary',
@@ -22,7 +30,9 @@ export const Button = ({
   ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }
 >) => {
   return (
-    <button {...props} className={clsx(ButtonStyles[variant], className)}>
+    <button
+      {...props}
+      className={clsx(common, ButtonStyles[variant], className)}>
       {children}
     </button>
   );

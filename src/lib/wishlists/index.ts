@@ -2,7 +2,7 @@
 
 import { generateShortUrl, slugify } from '@/utils/url';
 import { WishlistKey } from './constants';
-import { Invitation, Wishlist, WishlistItem } from './types';
+import { Invitation, Wishlist, WishlistDB, WishlistItem } from './types';
 import { kv } from '@vercel/kv';
 import { getServerUser, getServerUserEmail, getServerUserId } from '../auth';
 import { revalidateTag, unstable_cache } from 'next/cache';
@@ -45,7 +45,7 @@ export const cachedUserHasAccess = unstable_cache(
 
 export const cachedGetWishlist = unstable_cache(
   async (wishlistId: string) => {
-    return kv.hgetall<Wishlist>(`${WishlistKey.Wishlist}:${wishlistId}`);
+    return kv.hgetall<WishlistDB>(`${WishlistKey.Wishlist}:${wishlistId}`);
   },
   [WishlistKey.Wishlist],
   { revalidate: 3600, tags: [WishlistKey.Wishlist] }
@@ -70,26 +70,41 @@ export const cachedGetItems = unstable_cache(
   }
 );
 
+const convertWishlist =
+  (userEmail: string, userId: string) =>
+  (db: WishlistDB | null): Omit<Wishlist, 'items'> | null => {
+    if (!db) {
+      return null;
+    }
+    const { admin, receiverEmail, ...rest } = db;
+    return {
+      isAdmin: admin === userId,
+      isReceiver: receiverEmail === userEmail,
+      ...rest,
+    };
+  };
+
 export const getWishlist = async (id: string): Promise<Wishlist | null> => {
   const { email, id: userId } = await getServerUser();
   const hasAccess = await cachedUserHasAccess(id, email);
   if (!hasAccess) {
     throw new Error('Du har inte behörighet att se denna önskelista');
   }
-  const wishlist = await cachedGetWishlist(id);
+  const wishlist = await cachedGetWishlist(id).then(
+    convertWishlist(email, userId)
+  );
   if (!wishlist) {
     return null;
   }
-  const isReceiver = wishlist.receiverEmail === email;
   const items = await cachedGetItems(id);
 
   const clientItems: WishlistItem[] = items.map((item) => {
-    if (isReceiver) {
+    if (wishlist.isReceiver) {
       // User is receiver - hide some fields
       const { isReservedBy, isBoughtBy, ...clientItem } = item;
       return {
         ...clientItem,
-        isReceiver,
+        isReceiver: true,
       };
     } else {
       return {
@@ -103,7 +118,6 @@ export const getWishlist = async (id: string): Promise<Wishlist | null> => {
   return {
     ...wishlist,
     items: clientItems,
-    isReceiver,
   };
 };
 

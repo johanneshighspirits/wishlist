@@ -1,3 +1,13 @@
+export type WishlistDB = {
+  receiverEmail: string;
+  shortURL: string;
+  slug: string;
+  title: string;
+  admin: string;
+  bgImg: string;
+  id: string;
+};
+
 export type Wishlist = {
   id: string;
   title: string;

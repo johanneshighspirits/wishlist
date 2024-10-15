@@ -11,6 +11,7 @@ import { getWishlist } from '@/lib/wishlists';
 import { MembersEditor } from '@/components/MembersEditor';
 import { Suspense } from 'react';
 import { InvitationsEditor } from '@/components/InvitationsEditor';
+import { DeleteWishlist } from '@/components/DeleteWishlist';
 
 async function fetchWishlists() {
   const userId = await getServerUserId();
@@ -26,7 +27,6 @@ async function fetchWishlists() {
 
 export default async function WishlistsPage() {
   const userWishlists = await fetchWishlists();
-
   return (
     <section className="flex flex-col gap-8">
       <Suspense>
@@ -67,6 +67,7 @@ export default async function WishlistsPage() {
                       className="mx-auto"
                     />
                   )}
+                  {w.isAdmin && <DeleteWishlist wishlist={w} />}
                 </FantasyBackground>
               </li>
             ))}
@@ -74,8 +75,17 @@ export default async function WishlistsPage() {
         </article>
       ) : null}
       <article className="flex flex-col gap-4">
-        <h2>Skapa ny önskelista</h2>
-        <CreateWishlist />
+        {userWishlists.length < 2 ? (
+          <>
+            <h2>Skapa ny önskelista</h2>
+            <CreateWishlist />
+          </>
+        ) : (
+          <>
+            <h2>Max antal önskelistor uppnått.</h2>
+            <p>Radera en av dina önskelistor eller skapa ett premiumkonto 💰</p>
+          </>
+        )}
       </article>
     </section>
   );
