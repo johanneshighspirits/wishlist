@@ -89,7 +89,9 @@ export const getWishlist = async (id: string): Promise<Wishlist | null> => {
   const { email, id: userId } = await getServerUser();
   const hasAccess = await cachedUserHasAccess(id, email);
   if (!hasAccess) {
-    throw new Error('Du har inte behörighet att se denna önskelista');
+    throw new Error(
+      `Du har inte behörighet att se denna önskelista, id: ${id}`
+    );
   }
   const wishlist = await cachedGetWishlist(id).then(
     convertWishlist(email, userId)

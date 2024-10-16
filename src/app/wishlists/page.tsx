@@ -18,10 +18,23 @@ async function fetchWishlists() {
   const userWishlistIds = await kv.smembers(
     `${WishlistKey.UserWishlists}:${userId}`
   );
-  return Promise.all(
+  console.log(`${WishlistKey.UserWishlists}:${userId}`, userWishlistIds);
+  return Promise.allSettled<Promise<Wishlist>[]>(
     userWishlistIds
-      .map((wishlistId) => getWishlist(wishlistId))
-      .filter((w) => w !== null) as Promise<Wishlist & { id: string }>[]
+      .map((wishlistId) =>
+        getWishlist(wishlistId).catch((err) => {
+          console.error(err);
+          return null;
+        })
+      )
+      .filter((w) => w !== null) as Promise<Wishlist>[]
+  ).then(
+    (settled) =>
+      settled
+        .map((promise) =>
+          promise.status === 'fulfilled' ? promise.value : null
+        )
+        .filter((w) => w !== null) as Wishlist[]
   );
 }
 
