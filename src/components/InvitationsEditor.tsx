@@ -1,21 +1,22 @@
-import { getServerUserEmail } from '@/lib/auth';
-import { WishlistKey } from '@/lib/wishlists/constants';
-import { Invitation } from '@/lib/wishlists/types';
-import { kv } from '@vercel/kv';
-import { InvitationItem } from './InvitationItem';
+import { getServerUserEmail } from "@/lib/auth";
+import { getKeyUserInvitations } from "@/lib/wishlists/constants";
+import { Invitation } from "@/lib/wishlists/types";
+import { kv } from "@vercel/kv";
+import { InvitationItem } from "./InvitationItem";
 
 export const InvitationsEditor = async () => {
   const userEmail = await getServerUserEmail();
-  const invitations = await kv.smembers<Invitation[]>(
-    `${WishlistKey.Invitations}:${userEmail}`
+  const invitationKeys = await kv.smembers<string[]>(
+    getKeyUserInvitations(userEmail),
   );
-  if (
-    !invitations.filter((inv) => !(inv.isDeclined || inv.isAccepted)).length
-  ) {
-    return null;
-  }
+  const invitationRequests = await Promise.all<Promise<Invitation | null>[]>(
+    invitationKeys.map((key) => kv.get<Invitation | null>(key)),
+  );
+  const invitations = invitationRequests?.filter(
+    (inv) => inv !== null && !(inv.isDeclined || inv.isAccepted),
+  ) as Invitation[];
 
-  return (
+  return invitations.length > 0 ? (
     <div>
       <ul className="flex flex-col gap-8">
         {invitations.map((invitation) => (
@@ -26,5 +27,5 @@ export const InvitationsEditor = async () => {
         ))}
       </ul>
     </div>
-  );
+  ) : null;
 };

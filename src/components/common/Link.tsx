@@ -1,9 +1,9 @@
-import { PropsWithChildren } from 'react';
-import NextLink, { LinkProps } from 'next/link';
-import clsx from 'clsx';
-import { ButtonStyles, ButtonVariant } from './Button';
+import { PropsWithChildren } from "react";
+import NextLink, { LinkProps } from "next/link";
+import clsx from "clsx";
+import { ButtonVariantStyles, ButtonVariant } from "./Button";
 
-export const LinkStyles = 'underline underline-offset-2 hover:text-white/90';
+export const LinkStyles = "underline underline-offset-2 hover:text-white/90";
 
 export const Link = ({
   href,
@@ -21,7 +21,7 @@ export const Link = ({
 export const LinkButton = ({
   href,
   className,
-  variant = 'primary',
+  variant = "primary",
   children,
   ...props
 }: PropsWithChildren<
@@ -30,8 +30,9 @@ export const LinkButton = ({
   return (
     <NextLink
       {...props}
-      className={clsx(ButtonStyles[variant], 'inline-block', className)}
-      href={href}>
+      className={clsx(ButtonVariantStyles[variant], "inline-block", className)}
+      href={href}
+    >
       {children}
     </NextLink>
   );

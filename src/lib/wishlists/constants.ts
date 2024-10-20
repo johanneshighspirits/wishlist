@@ -1,26 +1,42 @@
 export enum WishlistKey {
   /** redis hash */
-  User = 'user',
+  User = "user",
   /** redis hash */
-  Wishlist = 'wishlist',
+  Wishlist = "wishlist",
   /** redis set */
-  UserWishlists = 'user_wishlists',
+  UserWishlists = "user_wishlists",
   /** redis hash */
-  WishlistItem = 'wishlist_item',
+  WishlistItem = "wishlist_item",
   /** redis set */
-  WishlistItems = 'wishlist_items',
+  WishlistItems = "wishlist_items",
   /**
    * ## SET
    * member emails
    */
-  WishlistMembers = 'wishlist_members',
+  WishlistMembers = "wishlist_members",
   /**
    * ## SET
    * all emails user has ever invited
    */
-  UserRecentMembers = 'user_recent_members',
+  UserRecentMembers = "user_recent_members",
   /** redis hash */
-  ShortURL = 'shortURL',
-  /** redis set */
-  Invitations = 'invitations',
+  ShortURL = "shortURL",
+  Invitations = "invitations",
 }
+
+/**
+ * A SET with all users emails for this wishlist
+ */
+export const getKeyMembers = (wishlistId: string) =>
+  `${WishlistKey.WishlistMembers}:${wishlistId}`;
+/**
+ * A single KEY/VALUE invitation
+ */
+export const getKeyInvitation = (email: string, wishlistId: string) =>
+  `${WishlistKey.Invitations}:${email}:${wishlistId}`;
+
+/**
+ * A SET with all invitations for this user
+ */
+export const getKeyUserInvitations = (email: string) =>
+  `${WishlistKey.Invitations}:${email}`;
