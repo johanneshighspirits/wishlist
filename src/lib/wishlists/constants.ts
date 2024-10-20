@@ -22,6 +22,7 @@ export enum WishlistKey {
   /** redis hash */
   ShortURL = "shortURL",
   Invitations = "invitations",
+  PendingInvitations = "pending_invitations",
 }
 
 /**
@@ -29,14 +30,19 @@ export enum WishlistKey {
  */
 export const getKeyMembers = (wishlistId: string) =>
   `${WishlistKey.WishlistMembers}:${wishlistId}`;
+
 /**
  * A single KEY/VALUE invitation
  */
 export const getKeyInvitation = (email: string, wishlistId: string) =>
   `${WishlistKey.Invitations}:${email}:${wishlistId}`;
-
 /**
- * A SET with all invitations for this user
+ * A SET with all invitation keys for this user
  */
 export const getKeyUserInvitations = (email: string) =>
   `${WishlistKey.Invitations}:${email}`;
+/**
+ * A SET with all pending invitations for a wishlist
+ */
+export const getKeyPendingWishlistInvitations = (wishlistId: string) =>
+  `${WishlistKey.PendingInvitations}:${wishlistId}`;

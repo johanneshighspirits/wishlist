@@ -8,9 +8,9 @@ import { FieldConfig } from "./forms/types";
 import { Validators } from "./forms/Validators";
 import { Input } from "./forms/Input";
 import { Button } from "./common/Button";
-import { addMembersToWishlist } from "@/app/actions";
 import clsx from "clsx";
 import { uninviteEmailFromWishlist } from "@/lib/wishlists";
+import { inviteMembersToWishlist } from "@/app/actions";
 
 const fields: FieldConfig<string>[] = [];
 
@@ -23,7 +23,8 @@ export const MembersEditor = ({ wishlist }: { wishlist: Wishlist }) => {
     }
     setButtonText("Bjuder in medlemmar, vänta...");
     data.append("keys", fieldNames.join(" "));
-    const enhancedAddMembers = addMembersToWishlist.bind(
+
+    const enhancedAddMembers = inviteMembersToWishlist.bind(
       null,
       wishlist.id,
       wishlist.title,

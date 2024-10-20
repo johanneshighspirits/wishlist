@@ -5,6 +5,7 @@ import {
   WishlistKey,
   getKeyInvitation,
   getKeyMembers,
+  getKeyPendingWishlistInvitations,
   getKeyUserInvitations,
 } from "./constants";
 import { Invitation, Wishlist, WishlistDB, WishlistItem } from "./types";
@@ -13,7 +14,7 @@ import { getServerUser, getServerUserEmail, getServerUserId } from "../auth";
 import { revalidateTag, unstable_cache } from "next/cache";
 import validator from "validator";
 import {
-  sendInvitationAcceptedEmail,
+  sendInvitationAnsweredEmail,
   sendInvitationEmail,
 } from "../email/sendEmail";
 import { checkWishlistAccess } from "./access";
@@ -196,7 +197,7 @@ export const deleteWishlist = async (wishlist: Wishlist) => {
   revalidateTag(WishlistKey.WishlistMembers);
 };
 
-export const addEmailsToWishlist = async (
+export const inviteEmailsToWishlist = async (
   emails: string[],
   wishlistId: string,
   wishlistTitle: string,
@@ -204,9 +205,9 @@ export const addEmailsToWishlist = async (
   bgImg: string,
 ) => {
   const { id: userId, email: invitedBy } = await getServerUser();
-  await kv.sadd(getKeyMembers(wishlistId), ...emails);
+  await kv.sadd(getKeyPendingWishlistInvitations(wishlistId), ...emails);
   await kv.sadd(`${WishlistKey.UserRecentMembers}:${userId}`, ...emails);
-  revalidateTag(WishlistKey.WishlistMembers);
+  revalidateTag(WishlistKey.PendingInvitations);
   revalidateTag(WishlistKey.UserRecentMembers);
   for (const email of emails) {
     await inviteEmailToWishlist(
@@ -343,10 +344,14 @@ export const handleInvitation = async (wishlistId: string, accept: boolean) => {
   });
   if (accept) {
     await kv.sadd(`${WishlistKey.UserWishlists}:${userId}`, wishlistId);
+    await kv.sadd(getKeyMembers(wishlistId), userEmail);
   } else {
     await kv.srem(`${WishlistKey.UserWishlists}:${userId}`, wishlistId);
+    await kv.srem(getKeyMembers(wishlistId), userEmail);
   }
-  await sendInvitationAcceptedEmail({
+  await kv.srem(getKeyPendingWishlistInvitations(wishlistId), userEmail);
+  await sendInvitationAnsweredEmail({
+    accepted: accept,
     invited: userEmail,
     invitedBy: invitation.invitedBy,
     shortURL: invitation.shortURL,

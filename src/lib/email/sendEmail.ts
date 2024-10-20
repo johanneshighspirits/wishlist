@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { InvitationTemplate } from '@/components/email/InvitationTemplate';
-import { Resend } from 'resend';
-import { serverSanitizeUserInput } from './serverSanitize';
-import validator from 'validator';
-import { InvitationAcceptedTemplate } from '@/components/email/InvitationAcceptedTemplate';
+import { InvitationTemplate } from "@/components/email/InvitationTemplate";
+import { Resend } from "resend";
+import { serverSanitizeUserInput } from "./serverSanitize";
+import validator from "validator";
+import { InvitationAnsweredTemplate } from "@/components/email/InvitationAnsweredTemplate";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -28,7 +28,7 @@ export const sendInvitationEmail = async ({
   wishlistTitle = serverSanitizeUserInput(wishlistTitle);
   if (validator.isEmail(receiver) && validator.isEmail(invitedBy)) {
     const { data, error } = await resend.emails.send({
-      from: 'Önskelistan <johannes@highspirits.se>',
+      from: "Önskelistan <johannes@highspirits.se>",
       to: [receiver],
       subject: `Inbjudan till ${wishlistTitle}`,
       react: InvitationTemplate({
@@ -45,36 +45,41 @@ export const sendInvitationEmail = async ({
   }
 };
 
-type SendInvitationAcceptedEmailProps = {
+type SendInvitationAnsweredEmailProps = {
+  accepted: boolean;
   invited: string;
   invitedBy: string;
   wishlistTitle: string;
   shortURL: string;
 };
 
-export const sendInvitationAcceptedEmail = async ({
+export const sendInvitationAnsweredEmail = async ({
+  accepted,
   invited,
   invitedBy,
   wishlistTitle,
   shortURL,
-}: SendInvitationAcceptedEmailProps) => {
+}: SendInvitationAnsweredEmailProps) => {
   invited = serverSanitizeUserInput(invited);
   invitedBy = serverSanitizeUserInput(invitedBy);
   wishlistTitle = serverSanitizeUserInput(wishlistTitle);
   if (validator.isEmail(invited) && validator.isEmail(invitedBy)) {
     const { data, error } = await resend.emails.send({
-      from: 'Önskelistan <johannes@highspirits.se>',
+      from: "Önskelistan <johannes@highspirits.se>",
       to: [invitedBy],
-      subject: `Inbjudan till ${wishlistTitle} accepterad`,
-      react: InvitationAcceptedTemplate({
+      subject: `Inbjudan till ${wishlistTitle} ${accepted ? "accepterad" : "avböjd"}`,
+      react: InvitationAnsweredTemplate({
+        accepted,
         invited,
         wishlistTitle,
         shortURL,
       }),
     });
-    console.log(`Invitation accepted by ${invited}`);
+    console.log(
+      `[sendInvitationAcceptedEmail] Invitation ${accepted ? "accepted" : "declined"} by ${invited}`,
+    );
     console.log({ data, error });
   } else {
-    console.error(`[sendInvitationAcceptedEmail] Malicious data?`);
+    console.error(`[sendInvitationAnsweredEmail] Malicious data?`);
   }
 };
