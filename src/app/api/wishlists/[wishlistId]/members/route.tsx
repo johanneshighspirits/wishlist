@@ -45,7 +45,7 @@ export const POST = async (
     ]);
     return NextResponse.json({
       members,
-      recentMembers: recentUninvitedMembers,
+      recentMembers: [...recentUninvitedMembers],
     });
   } catch (error: any) {
     if (error instanceof UserError) {

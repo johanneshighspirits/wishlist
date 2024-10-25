@@ -55,6 +55,38 @@ export const cachedGetWishlist = unstable_cache(
   { revalidate: 3600, tags: [WishlistKey.Wishlist] },
 );
 
+export const cachedGetWishlists = unstable_cache(
+  async (email: string, userId: string) => {
+    try {
+      const userWishlistIds = await kv.smembers(
+        `${WishlistKey.UserWishlists}:${userId}`,
+      );
+      return Promise.allSettled<Promise<Wishlist>[]>(
+        userWishlistIds
+          .map((wishlistId) =>
+            getWishlist(wishlistId, email, userId).catch((err) => {
+              console.error(err);
+              return null;
+            }),
+          )
+          .filter((w) => w !== null) as Promise<Wishlist>[],
+      ).then(
+        (settled) =>
+          settled
+            .map((promise) =>
+              promise.status === "fulfilled" ? promise.value : null,
+            )
+            .filter((w) => w !== null) as Wishlist[],
+      );
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  },
+  [WishlistKey.UserWishlists],
+  { revalidate: 3600, tags: [WishlistKey.Wishlist, WishlistKey.UserWishlists] },
+);
+
 export const cachedGetItems = unstable_cache(
   async (wishlistId: string) => {
     const itemIds = await kv.smembers(
@@ -89,8 +121,14 @@ const convertWishlist =
     };
   };
 
-export const getWishlist = async (id: string): Promise<Wishlist | null> => {
-  const { email, id: userId } = await getServerUser();
+/**
+ * Checks access, uses cache, converts DB to Wishlist
+ */
+export const getWishlist = async (
+  id: string,
+  email: string,
+  userId: string,
+): Promise<Wishlist | null> => {
   const hasAccess = await cachedUserHasAccess(id, email);
   if (!hasAccess) {
     throw new Error(

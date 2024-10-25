@@ -3,42 +3,29 @@ import { CreateWishlist } from "@/components/CreateWishlist";
 import { WishlistKey } from "@/lib/wishlists/constants";
 import { Wishlist } from "@/lib/wishlists/types";
 import { OpenWishlist } from "@/components/OpenWishlist";
-import { getServerUserId } from "@/lib/auth";
+import { getServerUser, getServerUserId } from "@/lib/auth";
 import { LoremIpsum } from "@/components/LoremIpsum";
 import { FantasyBackground } from "@/components/FantasyBackground";
 import { SparkleText } from "@/components/common/SparkleText";
-import { getWishlist } from "@/lib/wishlists";
+import { cachedGetWishlists } from "@/lib/wishlists";
 import { MembersEditor } from "@/components/MembersEditor";
 import { Suspense } from "react";
 import { InvitationsEditor } from "@/components/InvitationsEditor";
 import { DeleteWishlist } from "@/components/DeleteWishlist";
 
-async function fetchWishlists() {
-  const userId = await getServerUserId();
-  const userWishlistIds = await kv.smembers(
-    `${WishlistKey.UserWishlists}:${userId}`,
-  );
-  return Promise.allSettled<Promise<Wishlist>[]>(
-    userWishlistIds
-      .map((wishlistId) =>
-        getWishlist(wishlistId).catch((err) => {
-          console.error(err);
-          return null;
-        }),
-      )
-      .filter((w) => w !== null) as Promise<Wishlist>[],
-  ).then(
-    (settled) =>
-      settled
-        .map((promise) =>
-          promise.status === "fulfilled" ? promise.value : null,
-        )
-        .filter((w) => w !== null) as Wishlist[],
-  );
-}
-
 export default async function WishlistsPage() {
-  const userWishlists = await fetchWishlists();
+  const { email, id: userId } = await getServerUser();
+
+  const userWishlists = await cachedGetWishlists(email, userId);
+
+  if (userWishlists === null) {
+    return (
+      <div className="flex flex-col gap-4">
+        <h1 className="font-headline text-2xl">Något gick fel</h1>
+        <p>Försök igen senare</p>
+      </div>
+    );
+  }
   return (
     <section className="flex flex-col gap-8">
       <Suspense>

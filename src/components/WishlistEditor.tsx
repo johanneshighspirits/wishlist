@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Wishlist, WishlistItem } from '@/lib/wishlists/types';
-import { CreateWishlistItem } from './CreateWishlistItem';
-import { useState } from 'react';
-import { WishlistItems } from './WishlistItems';
-import { FantasyBackground } from './FantasyBackground';
+import { Wishlist, WishlistItem } from "@/lib/wishlists/types";
+import { CreateWishlistItem } from "./CreateWishlistItem";
+import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
+import { WishlistItems } from "./WishlistItems";
+import { FantasyBackground } from "./FantasyBackground";
 
 export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   const [items, setItems] = useState<WishlistItem[]>(wishlist?.items || []);
@@ -22,20 +22,42 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
           onEdit={(editedItems) => setItems(editedItems)}
         />
       </FantasyBackground>
-      {items.length > 0 ? (
-        <div className="mt-12">
+      <ItemsForm items={items}>
+        <CreateWishlistItem
+          wishlistId={wishlist.id}
+          onCreated={(newItem) => setItems((state) => [...state, newItem])}
+        />
+      </ItemsForm>
+    </>
+  );
+};
+
+const ItemsForm = ({
+  items,
+  children,
+}: PropsWithChildren<{ items: WishlistItem[] }>) => {
+  if (items.length > 10) {
+    return (
+      <div className="flex flex-col gap-4">
+        <p>Oj, vad många saker du önskar dig...</p>
+        <p>Ta bort något ur listan innan du kan önska mer</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex flex-col gap-4">
+        {items.length === 0 ? (
+          <>
+            <p>Oj, här var det tomt...</p>
+            <p>Använd formuläret 👇 för att lägga till något i listan</p>
+          </>
+        ) : (
           <p>Använd formuläret 👇 för att lägga till fler saker</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <p>Oj, här var det tomt...</p>
-          <p>Använd formuläret 👇 för att lägga till något i listan</p>
-        </div>
-      )}
-      <CreateWishlistItem
-        wishlistId={wishlist.id}
-        onCreated={(newItem) => setItems((state) => [...state, newItem])}
-      />
+        )}
+      </div>
+      {children}
     </>
   );
 };
