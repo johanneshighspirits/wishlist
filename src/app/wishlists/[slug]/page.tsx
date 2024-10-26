@@ -1,6 +1,7 @@
 import { FantasyBackground } from "@/components/FantasyBackground";
 import { WishlistEditor } from "@/components/WishlistEditor";
 import { SparkleText } from "@/components/common/SparkleText";
+import { getServerUser } from "@/lib/auth";
 import { getWishlist } from "@/lib/wishlists";
 import { WishlistKey } from "@/lib/wishlists/constants";
 import { Wishlist } from "@/lib/wishlists/types";
@@ -100,7 +101,8 @@ const fetchWishlist = async (slug: string): Promise<Wishlist> => {
     };
   }
   const wishlistId = await cachedGetWishlistIdFromSlug(slug);
-  const wishlist = await getWishlist(wishlistId);
+  const { email, id: userId } = await getServerUser();
+  const wishlist = await getWishlist(wishlistId, email, userId);
   if (!wishlist) {
     throw new Error(
       "Vi hittade ingen önskelista här, är du säker på att du har rätt adress?",
