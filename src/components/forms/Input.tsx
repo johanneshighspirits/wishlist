@@ -1,8 +1,8 @@
-import { ChangeEventHandler, FocusEventHandler } from 'react';
-import { useForm } from './Form';
-import { FieldConfig } from './types';
-import clsx from 'clsx';
-import { ImageUploader } from '../ImageUploader';
+import { ChangeEventHandler, FocusEventHandler } from "react";
+import { useForm } from "./Form";
+import { FieldConfig } from "./types";
+import clsx from "clsx";
+import { ImageUploader } from "../ImageUploader";
 
 export function Input<FieldName extends string>({
   name,
@@ -10,11 +10,11 @@ export function Input<FieldName extends string>({
 }: FieldConfig<FieldName> & { autoFocus?: boolean }) {
   const { getValueAndConfig, setValue, setIsDirty } = useForm();
   const { value, error, config, isDirty } = getValueAndConfig(name);
-  const { labelText, placeholderText, infoText, type = 'text' } = config;
-  if (type === 'file') {
+  const { labelText, placeholderText, infoText, type = "text" } = config;
+  if (type === "file") {
     return <ImageUploader name={name} />;
   }
-  const isCheckbox = type === 'checkbox';
+  const isCheckbox = type === "checkbox";
 
   const handleBlur: FocusEventHandler<HTMLInputElement> = (e) => {
     setIsDirty(name, true);
@@ -23,14 +23,14 @@ export function Input<FieldName extends string>({
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setValue(
       name,
-      isCheckbox ? (e.target.checked ? e.target.name : 'off') : e.target.value,
-      config
+      isCheckbox ? (e.target.checked ? e.target.name : "off") : e.target.value,
+      config,
     );
   };
 
-  const isRequired = config.validators?.some((v) => v.name === 'required');
+  const isRequired = config.validators?.some((v) => v.name === "required");
   const hasError = isDirty && error !== null;
-  const label = `${labelText}${isRequired ? ' *' : ''}`;
+  const label = `${labelText}${isRequired ? " *" : ""}`;
 
   const inputProps = {
     name,
@@ -44,18 +44,22 @@ export function Input<FieldName extends string>({
   return (
     <label
       className={
-        type === 'hidden'
-          ? 'hidden'
+        type === "hidden"
+          ? "hidden"
           : clsx(
-              'flex flex-1 gap-4',
+              "flex flex-1 gap-4",
               isCheckbox
-                ? 'flex-row items-center cursor-pointer accent-sky-600 border border-white/25 has-[:checked]:border-white has-[:checked]:bg-white/10 rounded-md p-2'
-                : 'flex-col pb-2'
+                ? "flex-row items-center cursor-pointer accent-sky-600 border border-white/25 has-[:checked]:border-white has-[:checked]:bg-white/10 rounded-md p-2"
+                : "flex-col pb-2",
             )
-      }>
+      }
+    >
       {isCheckbox ? (
         <>
-          <input className={clsx('h-6 w-6 rounded-sm')} {...inputProps}></input>
+          <input
+            className="h-6 w-6 rounded-sm text-base"
+            {...inputProps}
+          ></input>
           <span>{label}</span>
         </>
       ) : (
@@ -64,10 +68,11 @@ export function Input<FieldName extends string>({
           <input
             autoFocus={autoFocus}
             className={clsx(
-              'text-black bg-slate-200 focus:bg-white py-2 px-4 rounded-sm w-full placeholder:text-gray-700 focus:placeholder:text-gray-400',
-              hasError && 'border border-red-500 bg-red-200'
+              "text-black text-base bg-slate-200 focus:bg-white py-2 px-4 rounded-sm w-full placeholder:text-gray-700 focus:placeholder:text-gray-400",
+              hasError && "border border-red-500 bg-red-200",
             )}
-            {...inputProps}></input>
+            {...inputProps}
+          ></input>
         </>
       )}
       {hasError && (
