@@ -40,7 +40,9 @@ const ItemsForm = ({
   if (items.length > MAX_ITEMS) {
     return (
       <div className="flex flex-col gap-4">
-        <p>Oj, vad många saker du önskar dig...</p>
+        <p>
+          Oj, vad många saker du önskar dig... {MAX_ITEMS} {items.length}
+        </p>
         <p>
           Ta bort något ur listan innan du kan önska mer - eller skaffa
           premiumkonto 💸
