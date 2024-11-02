@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { Wishlist, WishlistItem } from "@/lib/wishlists/types";
-import { CreateWishlistItem } from "./CreateWishlistItem";
-import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
-import { WishlistItems } from "./WishlistItems";
-import { FantasyBackground } from "./FantasyBackground";
+import { Wishlist, WishlistItem } from '@/lib/wishlists/types';
+import { CreateWishlistItem } from './CreateWishlistItem';
+import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react';
+import { WishlistItems } from './WishlistItems';
+import { FantasyBackground } from './FantasyBackground';
+import { MAX_ITEMS } from '@/utils/settings';
 
 export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   const [items, setItems] = useState<WishlistItem[]>(wishlist?.items || []);
@@ -36,11 +37,14 @@ const ItemsForm = ({
   items,
   children,
 }: PropsWithChildren<{ items: WishlistItem[] }>) => {
-  if (items.length > 10) {
+  if (items.length > MAX_ITEMS) {
     return (
       <div className="flex flex-col gap-4">
         <p>Oj, vad många saker du önskar dig...</p>
-        <p>Ta bort något ur listan innan du kan önska mer</p>
+        <p>
+          Ta bort något ur listan innan du kan önska mer - eller skaffa
+          premiumkonto 💸
+        </p>
       </div>
     );
   }

@@ -1,17 +1,18 @@
-import { kv } from "@vercel/kv";
-import { CreateWishlist } from "@/components/CreateWishlist";
-import { WishlistKey } from "@/lib/wishlists/constants";
-import { Wishlist } from "@/lib/wishlists/types";
-import { OpenWishlist } from "@/components/OpenWishlist";
-import { getServerUser, getServerUserId } from "@/lib/auth";
-import { LoremIpsum } from "@/components/LoremIpsum";
-import { FantasyBackground } from "@/components/FantasyBackground";
-import { SparkleText } from "@/components/common/SparkleText";
-import { cachedGetWishlists } from "@/lib/wishlists";
-import { MembersEditor } from "@/components/MembersEditor";
-import { Suspense } from "react";
-import { InvitationsEditor } from "@/components/InvitationsEditor";
-import { DeleteWishlist } from "@/components/DeleteWishlist";
+import { kv } from '@vercel/kv';
+import { CreateWishlist } from '@/components/CreateWishlist';
+import { WishlistKey } from '@/lib/wishlists/constants';
+import { Wishlist } from '@/lib/wishlists/types';
+import { OpenWishlist } from '@/components/OpenWishlist';
+import { getServerUser, getServerUserId } from '@/lib/auth';
+import { LoremIpsum } from '@/components/LoremIpsum';
+import { FantasyBackground } from '@/components/FantasyBackground';
+import { SparkleText } from '@/components/common/SparkleText';
+import { cachedGetWishlists } from '@/lib/wishlists';
+import { MembersEditor } from '@/components/MembersEditor';
+import { Suspense } from 'react';
+import { InvitationsEditor } from '@/components/InvitationsEditor';
+import { DeleteWishlist } from '@/components/DeleteWishlist';
+import { MAX_WISHLISTS } from '@/utils/settings';
 
 export default async function WishlistsPage() {
   const { email, id: userId } = await getServerUser();
@@ -39,8 +40,7 @@ export default async function WishlistsPage() {
               <li key={w.id} className="text-white">
                 <FantasyBackground
                   backgroundImage={w.bgImg}
-                  className="flex flex-col gap-4 items-start p-4 lg:py-6 lg:px-8"
-                >
+                  className="flex flex-col gap-4 items-start p-4 lg:py-6 lg:px-8">
                   <div className="flex w-full justify-between items-center">
                     <p className="font-headline text-lg">
                       <SparkleText hideSparkle={!w.isReceiver}>
@@ -75,7 +75,7 @@ export default async function WishlistsPage() {
         </article>
       ) : null}
       <article className="flex flex-col gap-4">
-        {userWishlists.length < 2 ? (
+        {userWishlists.length < MAX_WISHLISTS ? (
           <>
             <h2>Skapa ny önskelista</h2>
             <CreateWishlist />
