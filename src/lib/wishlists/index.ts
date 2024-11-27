@@ -1,23 +1,23 @@
-"use server";
+'use server';
 
-import { generateShortUrl, slugify } from "@/utils/url";
+import { generateShortUrl, slugify } from '@/utils/url';
 import {
   WishlistKey,
   getKeyInvitation,
   getKeyMembers,
   getKeyPendingWishlistInvitations,
   getKeyUserInvitations,
-} from "./constants";
-import { Invitation, Wishlist, WishlistDB, WishlistItem } from "./types";
-import { kv } from "@vercel/kv";
-import { getServerUser, getServerUserEmail, getServerUserId } from "../auth";
-import { revalidateTag, unstable_cache } from "next/cache";
-import validator from "validator";
+} from './constants';
+import { Invitation, Wishlist, WishlistDB, WishlistItem } from './types';
+import { kv } from '@vercel/kv';
+import { getServerUser, getServerUserEmail, getServerUserId } from '../auth';
+import { revalidateTag, unstable_cache } from 'next/cache';
+import validator from 'validator';
 import {
   sendInvitationAnsweredEmail,
   sendInvitationEmail,
-} from "../email/sendEmail";
-import { checkWishlistAccess } from "./access";
+} from '../email/sendEmail';
+import { checkWishlistAccess } from './access';
 
 export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let length = 6;
@@ -25,7 +25,7 @@ export const getUniqueShortURL = async (uuid: string): Promise<string> => {
   let isNotUnique = true;
   while (isNotUnique) {
     const shortURLExists = await kv.exists(
-      `${WishlistKey.ShortURL}:${shortURL}`,
+      `${WishlistKey.ShortURL}:${shortURL}`
     );
     isNotUnique = shortURLExists > 0;
     if (!isNotUnique) {
@@ -44,7 +44,7 @@ export const cachedUserHasAccess = unstable_cache(
     return isMember === 1;
   },
   [WishlistKey.WishlistMembers],
-  { revalidate: 3600, tags: [WishlistKey.WishlistMembers] },
+  { revalidate: 3600, tags: [WishlistKey.WishlistMembers] }
 );
 
 export const cachedGetWishlist = unstable_cache(
@@ -52,14 +52,14 @@ export const cachedGetWishlist = unstable_cache(
     return kv.hgetall<WishlistDB>(`${WishlistKey.Wishlist}:${wishlistId}`);
   },
   [WishlistKey.Wishlist],
-  { revalidate: 3600, tags: [WishlistKey.Wishlist] },
+  { revalidate: 3600, tags: [WishlistKey.Wishlist] }
 );
 
 export const cachedGetWishlists = unstable_cache(
   async (email: string, userId: string) => {
     try {
       const userWishlistIds = await kv.smembers(
-        `${WishlistKey.UserWishlists}:${userId}`,
+        `${WishlistKey.UserWishlists}:${userId}`
       );
       return Promise.allSettled<Promise<Wishlist>[]>(
         userWishlistIds
@@ -67,16 +67,16 @@ export const cachedGetWishlists = unstable_cache(
             getWishlist(wishlistId, email, userId).catch((err) => {
               console.error(err);
               return null;
-            }),
+            })
           )
-          .filter((w) => w !== null) as Promise<Wishlist>[],
+          .filter((w) => w !== null) as Promise<Wishlist>[]
       ).then(
         (settled) =>
           settled
             .map((promise) =>
-              promise.status === "fulfilled" ? promise.value : null,
+              promise.status === 'fulfilled' ? promise.value : null
             )
-            .filter((w) => w !== null) as Wishlist[],
+            .filter((w) => w !== null) as Wishlist[]
       );
     } catch (err) {
       console.error(err);
@@ -84,18 +84,18 @@ export const cachedGetWishlists = unstable_cache(
     }
   },
   [WishlistKey.UserWishlists],
-  { revalidate: 3600, tags: [WishlistKey.Wishlist, WishlistKey.UserWishlists] },
+  { revalidate: 3600, tags: [WishlistKey.Wishlist, WishlistKey.UserWishlists] }
 );
 
 export const cachedGetItems = unstable_cache(
   async (wishlistId: string) => {
     const itemIds = await kv.smembers(
-      `${WishlistKey.WishlistItems}:${wishlistId}`,
+      `${WishlistKey.WishlistItems}:${wishlistId}`
     );
     const items = await Promise.all(
       itemIds.map((itemId) =>
-        kv.hgetall<WishlistItem>(`${WishlistKey.WishlistItem}:${itemId}`),
-      ),
+        kv.hgetall<WishlistItem>(`${WishlistKey.WishlistItem}:${itemId}`)
+      )
     );
     return items.filter((item) => item !== null) as WishlistItem[];
   },
@@ -103,12 +103,12 @@ export const cachedGetItems = unstable_cache(
   {
     revalidate: 3600,
     tags: [WishlistKey.WishlistItems, WishlistKey.WishlistItem],
-  },
+  }
 );
 
 const convertWishlist =
   (userEmail: string, userId: string) =>
-  (db: WishlistDB | null): Omit<Wishlist, "items"> | null => {
+  (db: WishlistDB | null): Omit<Wishlist, 'items'> | null => {
     if (!db) {
       return null;
     }
@@ -127,16 +127,16 @@ const convertWishlist =
 export const getWishlist = async (
   id: string,
   email: string,
-  userId: string,
+  userId: string
 ): Promise<Wishlist | null> => {
   const hasAccess = await cachedUserHasAccess(id, email);
   if (!hasAccess) {
     throw new Error(
-      `Du har inte behörighet att se denna önskelista, id: ${id}`,
+      `Du har inte behörighet att se denna önskelista, id: ${id}`
     );
   }
   const wishlist = await cachedGetWishlist(id).then(
-    convertWishlist(email, userId),
+    convertWishlist(email, userId)
   );
   if (!wishlist) {
     return null;
@@ -167,8 +167,8 @@ export const getWishlist = async (
 };
 
 export const addWishlist = async (
-  wishlist: Pick<Wishlist, "title" | "receiverEmail" | "bgImg">,
-  userId: string,
+  wishlist: Pick<Wishlist, 'title' | 'receiverEmail' | 'bgImg'>,
+  userId: string
 ) => {
   const userEmail = await getServerUserEmail();
   const id = crypto.randomUUID();
@@ -191,11 +191,11 @@ export const addWishlist = async (
   await kv.sadd(
     `${WishlistKey.WishlistMembers}:${id}`,
     newWishlist.receiverEmail,
-    userEmail,
+    userEmail
   );
   await kv.sadd(
     `${WishlistKey.UserRecentMembers}:${userId}`,
-    newWishlist.receiverEmail,
+    newWishlist.receiverEmail
   );
 
   if (newWishlist.receiverEmail && newWishlist.receiverEmail !== userEmail) {
@@ -205,7 +205,7 @@ export const addWishlist = async (
       id,
       newWishlist.title,
       newWishlist.shortURL,
-      newWishlist.bgImg || "#f1468e",
+      newWishlist.bgImg || '#f1468e'
     );
   }
   revalidateTag(WishlistKey.Wishlist);
@@ -226,8 +226,8 @@ export const deleteWishlist = async (wishlist: Wishlist) => {
 
   await Promise.all(
     wishlist.items.map((item) =>
-      deleteWishlistItem({ wishlistId, wishlistItemId: item.id }),
-    ),
+      deleteWishlistItem({ wishlistId, wishlistItemId: item.id })
+    )
   );
   revalidateTag(WishlistKey.Wishlist);
   revalidateTag(WishlistKey.WishlistItem);
@@ -240,9 +240,11 @@ export const inviteEmailsToWishlist = async (
   wishlistId: string,
   wishlistTitle: string,
   shortURL: string,
-  bgImg: string,
+  bgImg: string
 ) => {
   const { id: userId, email: invitedBy } = await getServerUser();
+  console.log(getKeyPendingWishlistInvitations(wishlistId));
+  console.log({ emails });
   await kv.sadd(getKeyPendingWishlistInvitations(wishlistId), ...emails);
   await kv.sadd(`${WishlistKey.UserRecentMembers}:${userId}`, ...emails);
   revalidateTag(WishlistKey.PendingInvitations);
@@ -254,7 +256,7 @@ export const inviteEmailsToWishlist = async (
       wishlistId,
       wishlistTitle,
       shortURL,
-      bgImg,
+      bgImg
     );
   }
   return emails;
@@ -266,10 +268,10 @@ export const inviteEmailToWishlist = async (
   wishlistId: string,
   wishlistTitle: string,
   shortURL: string,
-  bgImg: string,
+  bgImg: string
 ) => {
   if (!validator.isEmail(email)) {
-    throw new Error("Invalid email");
+    throw new Error('Invalid email');
   }
   const invitationKey = getKeyInvitation(email, wishlistId);
   await kv.sadd(getKeyUserInvitations(email), invitationKey);
@@ -284,7 +286,7 @@ export const inviteEmailToWishlist = async (
       isAccepted: false,
       isDeclined: false,
     }),
-    { ex: 7 * 24 * 60 * 60 },
+    { ex: 7 * 24 * 60 * 60 }
   );
   await sendInvitationEmail({
     receiver: email,
@@ -297,14 +299,14 @@ export const inviteEmailToWishlist = async (
 
 export const uninviteEmailFromWishlist = async (
   email: string,
-  wishlistId: string,
+  wishlistId: string
 ) => {
   if (!validator.isEmail(email)) {
-    throw new Error("Invalid email");
+    throw new Error('Invalid email');
   }
   const wishlist = await cachedGetWishlist(wishlistId);
   if (email === wishlist?.admin) {
-    throw new Error("Not possible to delete user");
+    throw new Error('Not possible to delete user');
   }
   const invitationKey = getKeyInvitation(email, wishlistId);
   await kv.srem(getKeyUserInvitations(email), invitationKey);
@@ -314,8 +316,8 @@ export const uninviteEmailFromWishlist = async (
 };
 
 export const addWishlistItem = async (
-  wishlistItem: Omit<WishlistItem, "id" | "timestamp">,
-  wishlistId: string,
+  wishlistItem: Omit<WishlistItem, 'id' | 'timestamp'>,
+  wishlistId: string
 ) => {
   const id = crypto.randomUUID();
   const timestamp = Date.now();
@@ -332,7 +334,7 @@ export const addWishlistItem = async (
 };
 
 export const editWishlistItem = async (
-  wishlistItem: Partial<WishlistItem> & { id: WishlistItem["id"] },
+  wishlistItem: Partial<WishlistItem> & { id: WishlistItem['id'] }
 ): Promise<WishlistItem> => {
   const key = `${WishlistKey.WishlistItem}:${wishlistItem.id}`;
   const item = await kv.hgetall<WishlistItem>(key);
@@ -366,10 +368,10 @@ export const handleInvitation = async (wishlistId: string, accept: boolean) => {
   const userId = await getServerUserId();
   const userEmail = await getServerUserEmail();
   const invitation = await kv.get<Invitation>(
-    getKeyInvitation(userEmail, wishlistId),
+    getKeyInvitation(userEmail, wishlistId)
   );
   if (!invitation) {
-    throw new Error("404 Not Found");
+    throw new Error('404 Not Found');
   }
   const updatedInvitation = {
     ...invitation,

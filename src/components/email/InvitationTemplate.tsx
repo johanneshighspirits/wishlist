@@ -8,8 +8,8 @@ import {
   Heading,
   Button,
   Container,
-} from "@react-email/components";
-import { EmailContainer } from "./EmailContainer";
+} from '@react-email/components';
+import { EmailContainer } from './EmailContainer';
 
 type InvitationTemplateProps = {
   invitedBy: string;
@@ -26,66 +26,61 @@ export const InvitationTemplateContent = ({
 }: InvitationTemplateProps) => (
   <Section
     style={{
-      height: "424px",
-      marginTop: "16px",
-      marginBottom: "16px",
-      borderRadius: "12px",
-      backgroundColor: "#a73161",
+      height: '424px',
+      marginTop: '16px',
+      marginBottom: '16px',
+      borderRadius: '12px',
+      backgroundColor: '#a73161',
       backgroundImage: bgImg,
-      backgroundSize: "200% 200%",
-    }}
-  >
+      backgroundSize: '200% 200%',
+    }}>
     <Text
       style={{
-        margin: "0px",
+        margin: '0px',
         fontWeight: 600,
-        color: "rgb(229,231,235)",
-      }}
-    >
+        color: 'rgb(229,231,235)',
+      }}>
       Inbjudan
     </Text>
     <Heading
       as="h1"
       style={{
-        margin: "0px",
+        margin: '0px',
         marginTop: 4,
         fontWeight: 700,
-        color: "rgb(255,255,255)",
-      }}
-    >
+        color: 'rgb(255,255,255)',
+      }}>
       {wishlistTitle}
     </Heading>
     <Text
       style={{
-        margin: "0px",
+        margin: '0px',
         marginTop: 8,
         fontSize: 16,
-        lineHeight: "24px",
-        color: "rgb(255,255,255)",
-      }}
-    >
-      Du har blivit inbjuden till {wishlistTitle}. Inbjudan kommer från{" "}
-      <Link href={`mailto:${invitedBy}`} style={{ color: "#fff !important" }}>
+        lineHeight: '24px',
+        color: 'rgb(255,255,255)',
+      }}>
+      Du har blivit inbjuden till {wishlistTitle}. Inbjudan kommer från{' '}
+      <Link href={`mailto:${invitedBy}`} style={{ color: '#fff !important' }}>
         {invitedBy}
       </Link>
     </Text>
     <Button
-      href={`https://jaybo-wishlist.vercel.app/wishlists`}
+      href={`https://jaybo-wishlist.vercel.app/invitations`}
       style={{
         marginTop: 24,
         borderRadius: 8,
         borderWidth: 1,
-        borderStyle: "solid",
-        borderColor: "#fff",
-        backgroundColor: "#000",
+        borderStyle: 'solid',
+        borderColor: '#fff',
+        backgroundColor: '#000',
         paddingLeft: 40,
         paddingRight: 40,
         paddingTop: 12,
         paddingBottom: 12,
         fontWeight: 600,
-        color: "#fff",
-      }}
-    >
+        color: '#fff',
+      }}>
       Acceptera inbjudan
     </Button>
   </Section>
