@@ -17,15 +17,20 @@ export const InvitationsEditor = async ({
   const invitationRequests = await Promise.all<Promise<Invitation | null>[]>(
     invitationKeys.map((key) => kv.get<Invitation | null>(key)),
   );
+  console.log(
+    `email: ${userEmail} found ${invitationRequests.length} invitations`,
+  );
   const invitations = invitationRequests?.filter(
     (inv) => inv !== null && !(inv.isDeclined || inv.isAccepted),
   ) as Invitation[];
-  console.log(`email: ${userEmail} found ${invitations.length} invitations`);
+  console.log(
+    `email: ${userEmail} after filtering: ${invitations.length} invitations`,
+  );
 
   if (invitations.length === 0) {
     return showMessageIfEmpty ? (
-      <div>
-        <h2>Det finns inga inbjudningar här...</h2>
+      <div className="flex flex-col gap-4">
+        <h2 className="font-headline">Det finns inga inbjudningar här...</h2>
         <p>En inbjudan är bara giltig i en vecka</p>
       </div>
     ) : null;
