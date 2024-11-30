@@ -1,7 +1,8 @@
-import { kv } from '@vercel/kv';
-import { NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import { WishlistKey } from '../wishlists/constants';
+import { kv } from "@vercel/kv";
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import { WishlistKey } from "../wishlists/constants";
+import { UserDB } from "./types";
 
 export const authOptions = {
   providers: [
@@ -30,7 +31,7 @@ export const authOptions = {
           lastname,
           email,
           image,
-        });
+        } satisfies UserDB);
         return user;
       },
     }),
@@ -55,8 +56,8 @@ export const logExpiry = (exp: number) => {
   const ms = expireDate.getTime() - now.getTime();
   const seconds = Math.round(ms / 1000);
   const minutes = Math.round(seconds / 60);
-  const timeFormatter = new Intl.RelativeTimeFormat('sv-SE');
-  const remainingSeconds = timeFormatter.format(seconds, 'second');
-  const remainingMinutes = timeFormatter.format(minutes, 'minute');
+  const timeFormatter = new Intl.RelativeTimeFormat("sv-SE");
+  const remainingSeconds = timeFormatter.format(seconds, "second");
+  const remainingMinutes = timeFormatter.format(minutes, "minute");
   console.log(`Går ut ${remainingMinutes} - (${remainingSeconds})`);
 };

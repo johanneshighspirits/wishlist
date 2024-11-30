@@ -7,7 +7,6 @@ import { Inter, Glegoo } from "next/font/google";
 import clsx from "clsx";
 import { WizardLoader } from "@/components/WizardLoader";
 import { DialogProvider } from "@/components/providers/DialogProvider";
-import { DialogTester } from "@/components/providers/DialogTester";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-body" });
 const glegoo = Glegoo({

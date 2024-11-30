@@ -26,6 +26,10 @@ export enum WishlistKey {
 }
 
 /**
+ * A HASH with a user object
+ */
+export const getKeyUsers = (userId: string) => `${WishlistKey.User}:${userId}`;
+/**
  * A SET with all users emails for this wishlist
  */
 export const getKeyMembers = (wishlistId: string) =>
