@@ -30,8 +30,13 @@ export const InvitationsEditor = async ({
   if (invitations.length === 0) {
     return showMessageIfEmpty ? (
       <div className="flex flex-col gap-4">
-        <h2 className="font-headline">Det finns inga inbjudningar här...</h2>
-        <p>En inbjudan är bara giltig i en vecka</p>
+        <h2 className="font-headline text-2xl">
+          Det finns inga obesvarade inbjudningar här...
+        </h2>
+        <p>
+          En inbjudan är bara giltig i en vecka, har det gått längre än så - be
+          om att bli inbjuden igen
+        </p>
       </div>
     ) : null;
   }
