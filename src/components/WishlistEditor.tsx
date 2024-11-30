@@ -1,14 +1,16 @@
-'use client';
+"use client";
 
-import { Wishlist, WishlistItem } from '@/lib/wishlists/types';
-import { CreateWishlistItem } from './CreateWishlistItem';
-import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react';
-import { WishlistItems } from './WishlistItems';
-import { FantasyBackground } from './FantasyBackground';
-import { MAX_ITEMS } from '@/utils/settings';
+import { Wishlist, WishlistItem } from "@/lib/wishlists/types";
+import { CreateWishlistItem } from "./CreateWishlistItem";
+import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
+import { WishlistItems } from "./WishlistItems";
+import { FantasyBackground } from "./FantasyBackground";
+import { MAX_ITEMS } from "@/utils/settings";
+import { useDialog } from "./providers/DialogProvider";
 
 export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   const [items, setItems] = useState<WishlistItem[]>(wishlist?.items || []);
+  const { openDialog } = useDialog();
   if (!wishlist) {
     return null;
   }
@@ -20,13 +22,25 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
           wishlistId={wishlist.id}
           isReceiver={wishlist.isReceiver}
           items={items}
-          onEdit={(editedItems) => setItems(editedItems)}
+          onEdit={(editedItem, editedItems) => {
+            setItems(editedItems);
+            openDialog({
+              title: "Önskelistan uppdaterad",
+              body: <p>{editedItem?.title} updaterad</p>,
+            });
+          }}
         />
       </FantasyBackground>
       <ItemsForm items={items}>
         <CreateWishlistItem
           wishlistId={wishlist.id}
-          onCreated={(newItem) => setItems((state) => [...state, newItem])}
+          onCreated={(newItem) => {
+            setItems((state) => [...state, newItem]);
+            openDialog({
+              title: "Önskelistan uppdaterad",
+              body: <p>{newItem.title} tillagd</p>,
+            });
+          }}
         />
       </ItemsForm>
     </>

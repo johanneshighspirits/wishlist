@@ -38,7 +38,7 @@ export default function RootLayout({
         <DialogProvider>
           <Protected>
             <Header />
-            <main className="flex flex-1 flex-col items-center justify-between p-4 lg:p-24">
+            <main className="flex flex-1 flex-col items-center justify-between p-4 md:p-12 lg:p-24">
               <WizardLoader>{children}</WizardLoader>
             </main>
             <Footer />

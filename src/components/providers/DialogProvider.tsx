@@ -78,7 +78,15 @@ const DialogContent = ({ content }: { content: DialogContent | null }) => {
   }
 
   const { title, body, okAction, cancelAction } = content;
-  const actions = [cancelAction, okAction].filter(isDefined);
+  const actions =
+    cancelAction || okAction
+      ? [cancelAction, okAction].filter(isDefined)
+      : [
+          {
+            text: "OK",
+            action: () => {},
+          },
+        ];
   return (
     <div className="flex flex-col justify-between gap-4">
       {title && (
