@@ -12,6 +12,7 @@ import { randomGradientBackground } from "@/utils/random";
 import { FantasyBackground } from "./FantasyBackground";
 import clsx from "clsx";
 import { SubmitButton } from "./forms/SubmitButton";
+import validator from "validator";
 
 function toJson<T>(data: Response) {
   return data.json() as Promise<T>;

@@ -141,11 +141,12 @@ const convertWishlist =
     if (!db) {
       return null;
     }
-    const { admin, receiverEmail, ...rest } = db;
+    const { admin, receiverEmail, bgImg, ...rest } = db;
     return {
       isAdmin: admin === userId,
       isReceiver: receiverEmail === userEmail,
       receiverEmail,
+      bgImg: validator.unescape(bgImg),
       ...rest,
     };
   };
