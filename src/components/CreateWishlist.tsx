@@ -60,7 +60,7 @@ export const CreateWishlist = () => {
   const router = useRouter();
   const formAction = async (data: FormData) => {
     setButtonText("Skapar ny önskelista, vänta...");
-    data.append("bgImg", bgImg);
+    data.append("bgImg", bgImg || randomBg());
     const wishlist = await createWishlist(data);
     setButtonText("Öppnar önskelistan...");
     setTimeout(() => {
@@ -110,7 +110,8 @@ export const CreateWishlist = () => {
 
 const ReceiverEmail = ({ children }: PropsWithChildren) => {
   const { getValue } = useForm();
-  const isHidden = getValue("isMine") === "on";
+  const isHidden =
+    getValue("isMine") === "on" || getValue("isMine") === "isMine";
   if (isHidden) {
     return null;
   }

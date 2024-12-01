@@ -1,28 +1,16 @@
 "use client";
 
-import { ApiAdminWishlistResponse } from "@/app/api/admin/wishlist/_schema";
 import { UserDB } from "@/lib/auth/types";
-import { WishlistDB } from "@/lib/wishlists/types";
+import { WishlistDB, WishlistItem } from "@/lib/wishlists/types";
 import Link from "next/link";
 import { useState } from "react";
 import { AvatarImage } from "../Avatar";
+import { ApiAdminWishlistUserResponse } from "@/app/api/admin/wishlist/user/_schema";
+import { ApiAdminWishlistItemsResponse } from "@/app/api/admin/wishlist/items/_schema";
 
 export const WishlistAdminInfo = ({ wishlist }: { wishlist: WishlistDB }) => {
   const { id, title, shortURL, admin, bgImg, slug } = wishlist;
-  const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<UserDB | undefined>();
 
-  const loadMoreInfo = async () => {
-    const info: ApiAdminWishlistResponse = await fetch(`/api/admin/wishlist`, {
-      method: "POST",
-      body: JSON.stringify({
-        id,
-        admin,
-      }),
-    }).then((res) => res.json());
-    console.log({ info });
-    setUser(info.user);
-  };
   return (
     <li
       key={id}
@@ -40,29 +28,52 @@ export const WishlistAdminInfo = ({ wishlist }: { wishlist: WishlistDB }) => {
         <b>shortURL</b>
         <span>{shortURL}</span>
       </div>
-      <User user={user} />
+      <UserAdminInfo wishlistId={id} adminId={admin} />
+      <WishlistItemsAdminInfo wishlistId={id} />
       <div className="flex gap-4 justify-end">
         <Link href={`/wishlists/${shortURL}`}>Open</Link>
-        {!user && (
-          <button
-            disabled={isLoading}
-            onClick={() => {
-              setIsLoading(true);
-              loadMoreInfo().finally(() => setIsLoading(false));
-            }}
-          >
-            Get user info
-          </button>
-        )}
       </div>
     </li>
   );
 };
 
-const User = ({ user }: { user?: UserDB }) => {
+const UserAdminInfo = ({
+  wishlistId,
+  adminId,
+}: {
+  wishlistId: string;
+  adminId: string;
+}) => {
+  const [user, setUser] = useState<UserDB | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadMoreInfo = async () => {
+    const info: ApiAdminWishlistUserResponse = await fetch(
+      `/api/admin/wishlist/user`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          id: wishlistId,
+          admin: adminId,
+        }),
+      },
+    ).then((res) => res.json());
+    setUser(info.user);
+  };
+
   if (!user) {
-    return null;
+    return (
+      <button
+        disabled={isLoading}
+        onClick={() => {
+          setIsLoading(true);
+          loadMoreInfo().finally(() => setIsLoading(false));
+        }}
+      >
+        Get user info
+      </button>
+    );
   }
+
   return (
     <div className="flex gap-4 items-center rounded-md bg-gray-900 p-4">
       <AvatarImage name={user.name} imageUrl={user.image} />
@@ -72,6 +83,43 @@ const User = ({ user }: { user?: UserDB }) => {
           {user.email}
         </a>
       </div>
+    </div>
+  );
+};
+
+const WishlistItemsAdminInfo = ({ wishlistId }: { wishlistId: string }) => {
+  const [items, setItems] = useState<WishlistItem[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadMoreInfo = async () => {
+    const info: ApiAdminWishlistItemsResponse = await fetch(
+      `/api/admin/wishlist/items`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          wishlistId,
+        }),
+      },
+    ).then((res) => res.json());
+    setItems(info.items);
+  };
+
+  if (!items) {
+    return (
+      <button
+        disabled={isLoading}
+        onClick={() => {
+          setIsLoading(true);
+          loadMoreInfo().finally(() => setIsLoading(false));
+        }}
+      >
+        Get wishlist items info
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex gap-4 items-center rounded-md bg-gray-900 p-4">
+      <pre className="overflow-x-auto">{JSON.stringify(items, null, 2)}</pre>
     </div>
   );
 };
