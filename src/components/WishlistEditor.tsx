@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Wishlist, WishlistItem } from "@/lib/wishlists/types";
-import { CreateWishlistItem } from "./CreateWishlistItem";
-import { Dispatch, PropsWithChildren, SetStateAction, useState } from "react";
-import { WishlistItems } from "./WishlistItems";
-import { FantasyBackground } from "./FantasyBackground";
-import { MAX_ITEMS } from "@/utils/settings";
-import { useDialog } from "./providers/DialogProvider";
+import { Wishlist, WishlistItem } from '@/lib/wishlists/types';
+import { CreateWishlistItem } from './CreateWishlistItem';
+import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react';
+import { WishlistItems } from './WishlistItems';
+import { FantasyBackground } from './FantasyBackground';
+import { MAX_ITEMS } from '@/utils/settings';
+import { useDialog } from './providers/DialogProvider';
 
 export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   const [items, setItems] = useState<WishlistItem[]>(wishlist?.items || []);
@@ -23,11 +23,15 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
           isReceiver={wishlist.isReceiver}
           items={items}
           onEdit={(editedItem, editedItems) => {
+            const itemBefore = items.find((item) => item.id === editedItem?.id);
+            const hasChanged = isWishlistItemEqual(editedItem, itemBefore);
             setItems(editedItems);
-            openDialog({
-              title: "Önskelistan uppdaterad",
-              body: <p>{editedItem?.title} updaterad</p>,
-            });
+            if (hasChanged) {
+              openDialog({
+                title: 'Önskelistan uppdaterad',
+                body: <p>{editedItem?.title} updaterad</p>,
+              });
+            }
           }}
         />
       </FantasyBackground>
@@ -37,7 +41,7 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
           onCreated={(newItem) => {
             setItems((state) => [...state, newItem]);
             openDialog({
-              title: "Önskelistan uppdaterad",
+              title: 'Önskelistan uppdaterad',
               body: <p>{newItem.title} tillagd</p>,
             });
           }}
@@ -78,4 +82,28 @@ const ItemsForm = ({
       {children}
     </>
   );
+};
+
+type ItemKeys = keyof WishlistItem;
+const ItemKeysToCheck: ItemKeys[] = [
+  'title',
+  'description',
+  'href',
+  'imageURL',
+];
+
+const isWishlistItemEqual = (a?: WishlistItem, b?: WishlistItem) => {
+  if (a === b) {
+    return false;
+  }
+  if (a === undefined || b === undefined) {
+    return false;
+  }
+
+  for (const key of ItemKeysToCheck) {
+    if (a[key] !== b[key]) {
+      return true;
+    }
+  }
+  return false;
 };
