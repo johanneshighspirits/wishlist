@@ -1,16 +1,16 @@
-import { kv } from "@vercel/kv";
-import { CreateWishlist } from "@/components/CreateWishlist";
-import { OpenWishlist } from "@/components/OpenWishlist";
-import { getServerUser, getServerUserId } from "@/lib/auth";
-import { LoremIpsum } from "@/components/LoremIpsum";
-import { FantasyBackground } from "@/components/FantasyBackground";
-import { SparkleText } from "@/components/common/SparkleText";
-import { cachedGetWishlists } from "@/lib/wishlists";
-import { MembersEditor } from "@/components/MembersEditor";
-import { DeleteWishlist } from "@/components/DeleteWishlist";
-import { MAX_WISHLISTS } from "@/utils/settings";
-import { Detail } from "./Detail";
-import { Collapsable } from "./Collapsable";
+import { kv } from '@vercel/kv';
+import { CreateWishlist } from '@/components/CreateWishlist';
+import { OpenWishlist } from '@/components/OpenWishlist';
+import { getServerUser, getServerUserId } from '@/lib/auth';
+import { LoremIpsum } from '@/components/LoremIpsum';
+import { FantasyBackground } from '@/components/FantasyBackground';
+import { SparkleText } from '@/components/common/SparkleText';
+import { cachedGetWishlists } from '@/lib/wishlists';
+import { MembersEditor } from '@/components/MembersEditor';
+import { DeleteWishlist } from '@/components/DeleteWishlist';
+import { MAX_WISHLISTS } from '@/utils/settings';
+import { Detail } from './Detail';
+import { Collapsable } from './Collapsable';
 
 export const Wishlists = async () => {
   const { email, id: userId } = await getServerUser();
@@ -30,42 +30,43 @@ export const Wishlists = async () => {
         <article className="flex flex-col gap-4">
           <h3>Dina önskelistor</h3>
           <ul className="flex flex-col gap-8">
-            {userWishlists.map((w) => (
-              <li key={w.id} className="text-white">
-                <FantasyBackground
-                  backgroundImage={w.bgImg}
-                  className="flex flex-col gap-4 items-start p-4 lg:py-6 lg:px-8"
-                >
-                  <div className="flex w-full justify-between items-center">
-                    <p className="font-headline text-lg">
-                      <SparkleText hideSparkle={!w.isReceiver}>
-                        {w.title}
-                      </SparkleText>
-                    </p>
-                    {/* <ShareLink
+            {userWishlists.map((w) =>
+              w ? (
+                <li key={w.id} className="text-white">
+                  <FantasyBackground
+                    backgroundImage={w.bgImg}
+                    className="flex flex-col gap-4 items-start p-4 lg:py-6 lg:px-8">
+                    <div className="flex w-full justify-between items-center">
+                      <p className="font-headline text-lg">
+                        <SparkleText hideSparkle={!w.isReceiver}>
+                          {w.title}
+                        </SparkleText>
+                      </p>
+                      {/* <ShareLink
                         title={w.title}
                         pathName={`/wishlist/${w.shortURL}`}></ShareLink> */}
-                  </div>
-                  <MembersEditor wishlist={w} />
-                  <div className="hidden lg:block h-24 blur-sm overflow-hidden">
-                    <LoremIpsum
-                      className="leading-6"
-                      maxLines={4}
-                      maxWords={8}
-                    />
-                  </div>
-                  <OpenWishlist id={w.shortURL} className="mx-auto" />
-                  {!w.isReceiver && (
-                    <OpenWishlist
-                      readOnly
-                      id={w.shortURL}
-                      className="mx-auto"
-                    />
-                  )}
-                  {w.isAdmin && <DeleteWishlist wishlist={w} />}
-                </FantasyBackground>
-              </li>
-            ))}
+                    </div>
+                    <MembersEditor wishlist={w} />
+                    <div className="hidden lg:block h-24 blur-sm overflow-hidden">
+                      <LoremIpsum
+                        className="leading-6"
+                        maxLines={4}
+                        maxWords={8}
+                      />
+                    </div>
+                    <OpenWishlist id={w.shortURL} className="mx-auto" />
+                    {!w.isReceiver && (
+                      <OpenWishlist
+                        readOnly
+                        id={w.shortURL}
+                        className="mx-auto"
+                      />
+                    )}
+                    {w.isAdmin && <DeleteWishlist wishlist={w} />}
+                  </FantasyBackground>
+                </li>
+              ) : null
+            )}
           </ul>
         </article>
       ) : null}

@@ -1,13 +1,14 @@
-import { WishlistAdminInfo } from "@/components/admin/WishlistAdminInfo";
-import { getServerUserEmail } from "@/lib/auth";
-import { cachedGetAllWishlists } from "@/lib/wishlists";
-import { redirect } from "next/navigation";
-import { Suspense } from "react";
+import { WishlistAdminInfo } from '@/components/admin/WishlistAdminInfo';
+import { getServerUserEmail } from '@/lib/auth';
+import { cachedGetAllWishlists } from '@/lib/wishlists';
+import { Wishlist, WishlistDB } from '@/lib/wishlists/types';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 export default async function AdminPage() {
   const email = await getServerUserEmail();
   if (email !== process.env.ADMIN_EMAIL) {
-    redirect("/");
+    redirect('/');
   }
 
   return (
@@ -23,7 +24,9 @@ const Wishlists = async ({ email }: { email: string }) => {
   if (!email) {
     return null;
   }
-  const wishlists = await cachedGetAllWishlists(email);
+  const wishlists = await cachedGetAllWishlists(email).then((lists) =>
+    lists.filter((list): list is WishlistDB => list !== null)
+  );
   if (!wishlists || wishlists.length === 0) {
     return <div>No wishlists found in DB</div>;
   }
