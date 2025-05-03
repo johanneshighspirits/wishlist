@@ -13,6 +13,11 @@ export const InvitationsEditor = async ({
   const invitationKeys = await kv.smembers<string[]>(
     getKeyUserInvitations(userEmail)
   );
+  console.log(
+    `email: ${userEmail} found ${
+      invitationKeys.length
+    } invitation keys\n  ${invitationKeys.join('\n  ')}`
+  );
   const invitationRequests = await Promise.all<Promise<Invitation | null>[]>(
     invitationKeys.map((key) => kv.get<Invitation | null>(key))
   );
