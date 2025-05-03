@@ -7,6 +7,7 @@ import { WishlistItems } from './WishlistItems';
 import { FantasyBackground } from './FantasyBackground';
 import { MAX_ITEMS } from '@/utils/settings';
 import { useDialog } from './providers/DialogProvider';
+import { printItemsToConsole } from '@/utils/print';
 
 export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   const [items, setItems] = useState<WishlistItem[]>(wishlist?.items || []);
@@ -14,6 +15,7 @@ export const WishlistEditor = ({ wishlist }: { wishlist: Wishlist }) => {
   if (!wishlist) {
     return null;
   }
+  printItemsToConsole(wishlist.title, items);
 
   return (
     <>

@@ -1,8 +1,8 @@
-import { getServerUserEmail } from "@/lib/auth";
-import { getKeyUserInvitations } from "@/lib/wishlists/constants";
-import { Invitation } from "@/lib/wishlists/types";
-import { kv } from "@vercel/kv";
-import { InvitationItem } from "./InvitationItem";
+import { getServerUserEmail } from '@/lib/auth';
+import { getKeyUserInvitations } from '@/lib/wishlists/constants';
+import { Invitation } from '@/lib/wishlists/types';
+import { kv } from '@vercel/kv';
+import { InvitationItem } from './InvitationItem';
 
 export const InvitationsEditor = async ({
   showMessageIfEmpty,
@@ -11,19 +11,26 @@ export const InvitationsEditor = async ({
 }) => {
   const userEmail = await getServerUserEmail();
   const invitationKeys = await kv.smembers<string[]>(
-    getKeyUserInvitations(userEmail),
+    getKeyUserInvitations(userEmail)
   );
   const invitationRequests = await Promise.all<Promise<Invitation | null>[]>(
-    invitationKeys.map((key) => kv.get<Invitation | null>(key)),
+    invitationKeys.map((key) => kv.get<Invitation | null>(key))
   );
   console.log(
-    `email: ${userEmail} found ${invitationRequests.length} invitations`,
+    `email: ${userEmail} found ${invitationRequests.length} invitations`
   );
+  invitationRequests.forEach((invitation) => {
+    if (invitation !== null) {
+      console.log(
+        `${invitation.wishlistId} ${invitation.wishlistTitle} - accepted: ${invitation.isAccepted}, declined: ${invitation.isDeclined}`
+      );
+    }
+  });
   const invitations = invitationRequests?.filter(
-    (inv) => inv !== null && !(inv.isDeclined || inv.isAccepted),
+    (inv) => inv !== null && !(inv.isDeclined || inv.isAccepted)
   ) as Invitation[];
   console.log(
-    `email: ${userEmail} after filtering: ${invitations.length} invitations`,
+    `email: ${userEmail} after filtering: ${invitations.length} invitations`
   );
 
   if (invitations.length === 0) {
